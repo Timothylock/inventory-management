@@ -1,0 +1,8 @@
+hash: 63fd8f06918244c5975860fd9707905a2d0afafe41c1300b851dbdf37c56456a
+updated: 2018-08-28T16:49:50.535993-04:00
+imports:
+- name: github.com/julienschmidt/httprouter
+  version: 8c199fb6259ffc1af525cc3ad52ee60ba8359669
+- name: github.com/kelseyhightower/envconfig
+  version: f611eb38b3875cc3bd991ca91c51d06446afa14c
+testImports: []
