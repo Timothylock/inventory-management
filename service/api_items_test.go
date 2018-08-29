@@ -1,45 +1,17 @@
-package main
+package service
 
 import (
 	"testing"
-	"net/http/httptest"
+	"encoding/json"
+	"net/http"
+	"io/ioutil"
+	"errors"
 
 	"github.com/golang/mock/gomock"
 	"github.com/Timothylock/inventory-management/items"
-	"github.com/Timothylock/inventory-management/service"
-	"github.com/stretchr/testify/assert"
-	"encoding/json"
-	"bytes"
-	"net/http"
-	"io/ioutil"
 	"github.com/Timothylock/inventory-management/responses"
-	"errors"
+	"github.com/stretchr/testify/assert"
 )
-
-func setupServer(ip items.Persister, t *testing.T) (*httptest.Server) {
-	is := items.NewService(ip)
-
-	serv := service.NewAPI(is)
-
-	return httptest.NewServer(service.NewRouter(&serv))
-}
-
-func sendPost(url string, body interface{}) (*http.Response, error) {
-	bs, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(bs))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	return client.Do(req)
-}
 
 
 func getBody(t *testing.T, resp *http.Response) string {
@@ -51,11 +23,6 @@ func getBody(t *testing.T, resp *http.Response) string {
 	assert.NoError(t, err, "failed reading body")
 
 	return string(b)
-}
-
-type MoveBody struct {
-	Direction string `json:"direction"`
-	ID        string `json:"id"`
 }
 
 func TestMoveItem(t *testing.T) {
