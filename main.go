@@ -25,6 +25,7 @@ func main() {
 		os.Exit(1)
 	}
 
+
 	is := items.NewService(persister)
 	api := service.NewAPI(is)
 	router := service.NewRouter(&api)
