@@ -6,12 +6,15 @@ go:
   - 1.10.x
   - tip
 
+before_install:
+  - export GOPATH=$HOME/gopath/src/github.com/Timothylock/inventory-management/
+
 install: true
 
 script:
   - ls /home/travis/gopath/
   - ls /home/travis/gopath/src/
-  - ls /home/travis/gopath/src/github.com/Timothylock/inventory-management/
+  - ls /home/travis/gopath/src/github.com/Timothylock/inventory-management
   - go test -race -coverprofile=coverage.txt -covermode=atomic
 
 after_success:
