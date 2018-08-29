@@ -31,6 +31,7 @@ func TestMoveItem(t *testing.T) {
 		setMock      func(*items.MockPersister)
 		expectCode int
 		expectedResponse responses.Success
+		body MoveBody
 	}
 
 	testCases := []testCase{
@@ -41,6 +42,10 @@ func TestMoveItem(t *testing.T) {
 			},
 			expectCode: 200,
 			expectedResponse: responses.Success{Success:true},
+			body: MoveBody{
+				ID: "1234",
+				Direction: "in",
+			},
 		},
 		{
 			testName: "internal error",
@@ -48,6 +53,10 @@ func TestMoveItem(t *testing.T) {
 				ip.EXPECT().MoveItem("1234", "in").Return(errors.New("sorry"))
 			},
 			expectCode: 500,
+			body: MoveBody{
+				ID: "1234",
+				Direction: "in",
+			},
 		},
 		{
 			testName: "item not found error",
@@ -55,12 +64,29 @@ func TestMoveItem(t *testing.T) {
 				ip.EXPECT().MoveItem("1234", "in").Return(items.ItemNotFoundErr)
 			},
 			expectCode: 404,
+			body: MoveBody{
+				ID: "1234",
+				Direction: "in",
+			},
 		},
-	}
-
-	mb := MoveBody{
-		ID: "1234",
-		Direction: "in",
+		{
+			testName: "missing id in body",
+			setMock: func(ip *items.MockPersister) {},
+			expectCode: 400,
+			body: MoveBody{
+				ID: "",
+				Direction: "in",
+			},
+		},
+		{
+			testName: "missing direction in body",
+			setMock: func(ip *items.MockPersister) {},
+			expectCode: 400,
+			body: MoveBody{
+				ID: "1234",
+				Direction: "",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -74,7 +100,7 @@ func TestMoveItem(t *testing.T) {
 			server := setupServer(ip, t)
 			defer server.Close()
 
-			resp, err := sendPost(server.URL+"/api/item/move", mb)
+			resp, err := sendPost(server.URL+"/api/item/move", tc.body)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectCode, resp.StatusCode)
 

@@ -54,6 +54,7 @@ func (a *API) MoveItem() http.Handler{
 
 		if mb.ID == "" || mb.Direction == "" {
 			responses.SendError(w, responses.MissingParamError("missing id or direction in the body"))
+			return
 		}
 
 		err := a.itemsService.MoveItem(mb.ID, mb.Direction)
