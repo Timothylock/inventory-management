@@ -65,7 +65,5 @@ func (s *Service) AddItem(id string) error {
 
 
 func (s *Service) MoveItem(id, direction string) error {
-	// DB Stuff
-
-	return nil
+	return s.persister.MoveItem(id, direction)
 }
