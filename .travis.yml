@@ -12,7 +12,7 @@ git:
 install: true
 
 script:
-  - ./ci/test.sh
+  - sh ./ci/test.sh
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
