@@ -28,6 +28,6 @@ func main() {
 	is := items.NewService(persister)
 	api := service.NewAPI(is)
 	router := service.NewRouter(&api)
-	
+
 	log.Fatal(http.ListenAndServe(":9090", router))
 }
