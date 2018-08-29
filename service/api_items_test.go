@@ -132,36 +132,32 @@ func TestDeleteItem(t *testing.T) {
 			id:               "1",
 		},
 		{
-			testName:         "missing id",
-			setMock:          func(ip *items.MockPersister) {},
-			expectCode:       400,
-			expectedResponse: responses.Success{Success: true},
-			id:               "",
+			testName:   "missing id",
+			setMock:    func(ip *items.MockPersister) {},
+			expectCode: 400,
+			id:         "",
 		},
 		{
 			testName: "internal error",
 			setMock: func(ip *items.MockPersister) {
 				ip.EXPECT().DeleteItem("1").Return(errors.New("oops"))
 			},
-			expectCode:       500,
-			expectedResponse: responses.Success{Success: true},
-			id:               "1",
+			expectCode: 500,
+			id:         "1",
 		},
 		{
 			testName: "item not found",
 			setMock: func(ip *items.MockPersister) {
 				ip.EXPECT().DeleteItem("1").Return(items.ItemNotFoundErr)
 			},
-			expectCode:       500,
-			expectedResponse: responses.Success{Success: true},
-			id:               "1",
+			expectCode: 404,
+			id:         "1",
 		},
 		{
-			testName:         "too many param",
-			setMock:          func(ip *items.MockPersister) {},
-			expectCode:       400,
-			expectedResponse: responses.Success{Success: true},
-			id:               "1&id=12",
+			testName:   "too many param",
+			setMock:    func(ip *items.MockPersister) {},
+			expectCode: 400,
+			id:         "1&id=12",
 		},
 	}
 
