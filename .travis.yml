@@ -9,9 +9,6 @@ go:
 git:
   depth: 1
 
-before_install:
-  - export GOPATH="$GOPATH:${TRAVIS_BUILD_DIR}"
-
 install: true
 
 script:
