@@ -8,11 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"errors"
 	"github.com/Timothylock/inventory-management/config"
+	"github.com/Timothylock/inventory-management/items"
 )
 
 const (
-	updateItem = `UPDATE items`
-	doesItemExist = `GET count\(1\) FROM items`
+	updateItem = `UPDATE items.+`
+	doesItemExist = `GET count\(1\) FROM items.+`
+	deleteItem = `DELETE FROM items.+`
 )
 
 func newTestDB(t *testing.T) (*MySQL, sqlmock.Sqlmock) {
@@ -115,5 +117,44 @@ func TestMoveItemInternalErr(t *testing.T) {
 
 	err := db.MoveItem("1234", "in")
 	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteItemInternalErr(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectExec(deleteItem).
+		WithArgs("1234").
+		WillReturnError(errors.New("sorry"))
+
+	err := db.DeleteItem("1234")
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteItemNoRowsAff(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectExec(deleteItem).
+		WithArgs("1234").
+		WillReturnResult(sqlmock.NewResult(1, 0))
+
+	err := db.DeleteItem("1234")
+	assert.Equal(t, items.ItemNotFoundErr, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteItemSuccess(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectExec(deleteItem).
+		WithArgs("1234").
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err := db.DeleteItem("1234")
+	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

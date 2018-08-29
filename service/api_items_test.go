@@ -1,18 +1,17 @@
 package service
 
 import (
-	"testing"
 	"encoding/json"
-	"net/http"
-	"io/ioutil"
 	"errors"
+	"io/ioutil"
+	"net/http"
+	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/responses"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
-
 
 func getBody(t *testing.T, resp *http.Response) string {
 	if resp == nil || resp.Body == nil {
@@ -27,11 +26,11 @@ func getBody(t *testing.T, resp *http.Response) string {
 
 func TestMoveItem(t *testing.T) {
 	type testCase struct {
-		testName     string
-		setMock      func(*items.MockPersister)
-		expectCode int
+		testName         string
+		setMock          func(*items.MockPersister)
+		expectCode       int
 		expectedResponse responses.Success
-		body MoveBody
+		body             MoveBody
 	}
 
 	testCases := []testCase{
@@ -40,10 +39,10 @@ func TestMoveItem(t *testing.T) {
 			setMock: func(ip *items.MockPersister) {
 				ip.EXPECT().MoveItem("1234", "in").Return(nil)
 			},
-			expectCode: 200,
-			expectedResponse: responses.Success{Success:true},
+			expectCode:       200,
+			expectedResponse: responses.Success{Success: true},
 			body: MoveBody{
-				ID: "1234",
+				ID:        "1234",
 				Direction: "in",
 			},
 		},
@@ -54,7 +53,7 @@ func TestMoveItem(t *testing.T) {
 			},
 			expectCode: 500,
 			body: MoveBody{
-				ID: "1234",
+				ID:        "1234",
 				Direction: "in",
 			},
 		},
@@ -65,25 +64,25 @@ func TestMoveItem(t *testing.T) {
 			},
 			expectCode: 404,
 			body: MoveBody{
-				ID: "1234",
+				ID:        "1234",
 				Direction: "in",
 			},
 		},
 		{
-			testName: "missing id in body",
-			setMock: func(ip *items.MockPersister) {},
+			testName:   "missing id in body",
+			setMock:    func(ip *items.MockPersister) {},
 			expectCode: 400,
 			body: MoveBody{
-				ID: "",
+				ID:        "",
 				Direction: "in",
 			},
 		},
 		{
-			testName: "missing direction in body",
-			setMock: func(ip *items.MockPersister) {},
+			testName:   "missing direction in body",
+			setMock:    func(ip *items.MockPersister) {},
 			expectCode: 400,
 			body: MoveBody{
-				ID: "1234",
+				ID:        "1234",
 				Direction: "",
 			},
 		},
@@ -113,3 +112,70 @@ func TestMoveItem(t *testing.T) {
 	}
 }
 
+func TestDeleteItem(t *testing.T) {
+	type testCase struct {
+		testName         string
+		setMock          func(*items.MockPersister)
+		expectCode       int
+		expectedResponse responses.Success
+		id               string
+	}
+
+	testCases := []testCase{
+		{
+			testName: "success",
+			setMock: func(ip *items.MockPersister) {
+				ip.EXPECT().DeleteItem("1").Return(nil)
+			},
+			expectCode:       200,
+			expectedResponse: responses.Success{Success: true},
+			id:               "1",
+		},
+		{
+			testName:         "missing id",
+			setMock:          func(ip *items.MockPersister) {},
+			expectCode:       400,
+			expectedResponse: responses.Success{Success: true},
+			id:               "",
+		},
+		{
+			testName: "internal error",
+			setMock: func(ip *items.MockPersister) {
+				ip.EXPECT().DeleteItem("1").Return(errors.New("oops"))
+			},
+			expectCode:       500,
+			expectedResponse: responses.Success{Success: true},
+			id:               "1",
+		},
+		{
+			testName:         "too many param",
+			setMock:          func(ip *items.MockPersister) {},
+			expectCode:       400,
+			expectedResponse: responses.Success{Success: true},
+			id:               "1&id=12",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			ip := items.NewMockPersister(mc)
+			tc.setMock(ip)
+
+			server := setupServer(ip, t)
+			defer server.Close()
+
+			resp, err := sendDelete(server.URL + "/api/item?id=" + tc.id)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectCode, resp.StatusCode)
+
+			if tc.expectCode == 200 {
+				b, err := json.Marshal(tc.expectedResponse)
+				assert.NoError(t, err)
+				assert.JSONEq(t, string(b), string(getBody(t, resp)))
+			}
+		})
+	}
+}

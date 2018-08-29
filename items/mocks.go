@@ -37,3 +37,13 @@ func (_m *MockPersister) MoveItem(ID string, direction string) error {
 func (_mr *_MockPersisterRecorder) MoveItem(arg0, arg1 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "MoveItem", arg0, arg1)
 }
+
+func (_m *MockPersister) DeleteItem(ID string) error {
+	ret := _m.ctrl.Call(_m, "DeleteItem", ID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockPersisterRecorder) DeleteItem(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteItem", arg0)
+}

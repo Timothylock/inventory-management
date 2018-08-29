@@ -1,17 +1,18 @@
 package service
 
 import (
-	"net/http"
-	"fmt"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
 
-	"github.com/Timothylock/inventory-management/middleware"
 	"github.com/Timothylock/inventory-management/items"
+	"github.com/Timothylock/inventory-management/middleware"
 	"github.com/Timothylock/inventory-management/responses"
 
-	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 type API struct {
@@ -19,7 +20,7 @@ type API struct {
 }
 
 func NewAPI(is items.Service) API {
-	return API {
+	return API{
 		itemsService: is,
 	}
 }
@@ -29,13 +30,13 @@ func NewRouter(api *API) http.Handler {
 
 	// Items
 	router.Handler("GET", "/api/item/info", middleware.UserRequired(api.SearchItems()))
-	router.Handler("POST","/api/item/move", middleware.UserRequired(api.MoveItem()))
-	router.Handler("DELETE","/api/item/:identifier", middleware.UserRequired(api.DeleteItem()))
+	router.Handler("POST", "/api/item/move", middleware.UserRequired(api.MoveItem()))
+	router.Handler("DELETE", "/api/item", middleware.UserRequired(api.DeleteItem()))
 
 	// User
-	router.Handler("POST","/api/user/add", middleware.UserRequired(api.NotImplemented()))
-	router.Handler("POST","/api/user/login", api.NotImplemented())
-	router.Handler("DELETE","/api/user/logout", api.NotImplemented())
+	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.NotImplemented()))
+	router.Handler("POST", "/api/user/login", api.NotImplemented())
+	router.Handler("DELETE", "/api/user/logout", api.NotImplemented())
 
 	// Frontend
 	mux := http.NewServeMux()
@@ -45,7 +46,7 @@ func NewRouter(api *API) http.Handler {
 	return mux
 }
 
-func (a *API) NotImplemented() http.Handler{
+func (a *API) NotImplemented() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Not yet implemented\n")
 	})

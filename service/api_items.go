@@ -12,7 +12,7 @@ type MoveBody struct {
 	ID        string `json:"id"`
 }
 
-func (a *API) SearchItems() http.Handler{
+func (a *API) SearchItems() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := getOptionalParam(r, "id")
 		name := getOptionalParam(r, "name")
@@ -29,25 +29,28 @@ func (a *API) SearchItems() http.Handler{
 	})
 }
 
-func (a *API) DeleteItem() http.Handler{
+func (a *API) DeleteItem() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id, err := getRequiredParam(r, "id")
 		if err != nil {
 			responses.SendError(w, responses.MissingParamError("id"))
+			return
 		}
 
 		err = a.itemsService.DeleteItem(id)
 		if err != nil && err == items.ItemNotFoundErr {
 			responses.SendError(w, responses.ItemNotFound(err))
+			return
 		} else if err != nil {
 			responses.SendError(w, responses.InternalError(err))
+			return
 		}
 
 		sendJSONorErr(responses.Success{Success: true}, w)
 	})
 }
 
-func (a *API) MoveItem() http.Handler{
+func (a *API) MoveItem() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mb := MoveBody{}
 		parseBody(r, &mb)

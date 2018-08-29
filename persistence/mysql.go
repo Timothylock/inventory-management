@@ -68,3 +68,24 @@ func (m *MySQL) MoveItem(ID, direction string) error {
 	)
 	return err
 }
+
+func (m *MySQL) DeleteItem(ID string) error {
+	r, err := m.conn.Exec(
+		"DELETE FROM items WHERE ID = ?",
+		ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	ra, err := r.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if ra <= 0 {
+		return items.ItemNotFoundErr
+	}
+
+	return err
+}
