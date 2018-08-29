@@ -9,6 +9,9 @@ go:
 install: true
 
 script:
+  - ls /home/travis/gopath/
+  - ls /home/travis/gopath/src/
+  - ls /home/travis/gopath/src/github.com/Timothylock/inventory-management/
   - go test -race -coverprofile=coverage.txt -covermode=atomic
 
 after_success:
