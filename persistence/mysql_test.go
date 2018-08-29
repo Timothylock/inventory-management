@@ -6,6 +6,8 @@ import (
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
+	"errors"
+	"github.com/Timothylock/inventory-management/config"
 )
 
 const (
@@ -22,6 +24,18 @@ func newTestDB(t *testing.T) (*MySQL, sqlmock.Sqlmock) {
 	return &MySQL{
 		conn:     sqlx.NewDb(db, "sqlmock"),
 	}, mock
+}
+
+func TestConnFailsNoneExistent(t *testing.T) {
+	c := config.Config{
+		DbUrl: "localhost",
+		DbUser: "nobody",
+		DbPass: "foo",
+		DbName: "blah",
+	}
+
+	_, err := NewMySQL(&c)
+	assert.Error(t,err)
 }
 
 func TestMoveItem(t *testing.T) {
@@ -85,6 +99,19 @@ func TestMoveItemNotFound(t *testing.T) {
 	mock.ExpectQuery(doesItemExist).
 		WithArgs("1234").
 		WillReturnRows(rows)
+
+	err := db.MoveItem("1234", "in")
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestMoveItemInternalErr(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectQuery(doesItemExist).
+		WithArgs("1234").
+		WillReturnError(errors.New("sorry"))
 
 	err := db.MoveItem("1234", "in")
 	assert.Error(t, err)
