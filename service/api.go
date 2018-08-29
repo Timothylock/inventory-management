@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	"inventory-management/middleware"
-	"inventory-management/items"
-	"inventory-management/responses"
+	"github.com/Timothylock/inventory-management/middleware"
+	"github.com/Timothylock/inventory-management/items"
+	"github.com/Timothylock/inventory-management/responses"
 
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"

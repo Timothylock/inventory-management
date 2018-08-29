@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"os"
 
-	"inventory-management/service"
-	"inventory-management/items"
-	"inventory-management/config"
-	"inventory-management/persistence"
+	"github.com/Timothylock/inventory-management/service"
+	"github.com/Timothylock/inventory-management/items"
+	"github.com/Timothylock/inventory-management/config"
+	"github.com/Timothylock/inventory-management/persistence"
 )
 
 func main() {

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"inventory-management/config"
-	"inventory-management/items"
+	"github.com/Timothylock/inventory-management/config"
+	"github.com/Timothylock/inventory-management/items"
 
 	"github.com/jmoiron/sqlx"
 )

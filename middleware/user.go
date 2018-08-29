@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"inventory-management/responses"
+	"github.com/Timothylock/inventory-management/responses"
 )
 
 func UserRequired(h http.Handler) http.Handler  {

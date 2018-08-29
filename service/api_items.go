@@ -3,8 +3,8 @@ package service
 import (
 	"net/http"
 
-	"inventory-management/items"
-	"inventory-management/responses"
+	"github.com/Timothylock/inventory-management/items"
+	"github.com/Timothylock/inventory-management/responses"
 )
 
 type MoveBody struct {

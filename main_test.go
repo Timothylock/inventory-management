@@ -5,14 +5,14 @@ import (
 	"net/http/httptest"
 
 	"github.com/golang/mock/gomock"
-	"inventory-management/items"
-	"inventory-management/service"
+	"github.com/Timothylock/inventory-management/items"
+	"github.com/Timothylock/inventory-management/service"
 	"github.com/stretchr/testify/assert"
 	"encoding/json"
 	"bytes"
 	"net/http"
 	"io/ioutil"
-	"inventory-management/responses"
+	"github.com/Timothylock/inventory-management/responses"
 	"errors"
 )
 
