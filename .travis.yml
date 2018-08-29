@@ -10,7 +10,7 @@ git:
   depth: 1
 
 before_install:
-  - export GOPATH="$GOPATH:${TRAVIS_BUILD_DIR}/wattpad"
+  - export GOPATH="$GOPATH:${TRAVIS_BUILD_DIR}"
 
 install: true
 
