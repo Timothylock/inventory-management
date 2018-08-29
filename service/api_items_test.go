@@ -148,6 +148,15 @@ func TestDeleteItem(t *testing.T) {
 			id:               "1",
 		},
 		{
+			testName: "item not found",
+			setMock: func(ip *items.MockPersister) {
+				ip.EXPECT().DeleteItem("1").Return(items.ItemNotFoundErr)
+			},
+			expectCode:       500,
+			expectedResponse: responses.Success{Success: true},
+			id:               "1",
+		},
+		{
 			testName:         "too many param",
 			setMock:          func(ip *items.MockPersister) {},
 			expectCode:       400,
