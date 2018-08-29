@@ -9,10 +9,10 @@ import (
 
 func UserRequired(h http.Handler) http.Handler  {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		allow := false
+		allow := true
 
 		if !allow {
-			responses.WithError(w, responses.NotLoggedIn(errors.New("must be logged in to access this endpoint")))
+			responses.SendError(w, responses.NotLoggedIn(errors.New("must be logged in to access this endpoint")))
 			return
 		}
 

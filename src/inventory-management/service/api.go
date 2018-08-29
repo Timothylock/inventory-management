@@ -3,22 +3,28 @@ package service
 import (
 	"net/http"
 	"fmt"
+	"encoding/json"
+	"errors"
 
 	"inventory-management/middleware"
+	"inventory-management/items"
+	"inventory-management/responses"
 
 	"github.com/julienschmidt/httprouter"
+	"io/ioutil"
 )
 
 type API struct {
+	itemsService items.Service
 }
 
 func NewRouter(api *API) http.Handler {
 	router := httprouter.New()
 
 	// Items
-	router.Handler("GET", "/api/item/:identifier/info", middleware.UserRequired(api.NotImplemented()))
-	router.Handler("POST","/api/item/:identifier/location", middleware.UserRequired(api.NotImplemented()))
-	router.Handler("DELETE","/api/item/:identifier", middleware.UserRequired(api.NotImplemented()))
+	router.Handler("GET", "/api/item/info", middleware.UserRequired(api.SearchItems()))
+	router.Handler("POST","/api/item/move", middleware.UserRequired(api.MoveItem()))
+	router.Handler("DELETE","/api/item/:identifier", middleware.UserRequired(api.DeleteItem()))
 
 	// User
 	router.Handler("POST","/api/user/add", middleware.UserRequired(api.NotImplemented()))
@@ -33,12 +39,46 @@ func NewRouter(api *API) http.Handler {
 	return mux
 }
 
-func (a *API) Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprint(w, "Welcome!\n")
-}
-
 func (a *API) NotImplemented() http.Handler{
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Not yet implemented\n")
 	})
+}
+
+func getOptionalParam(r *http.Request, name string) string {
+	param, _ := getRequiredParam(r, name)
+	return param
+}
+
+func getRequiredParam(r *http.Request, name string) (string, error) {
+	params := r.URL.Query()[name]
+
+	if len(params) != 1 {
+		return "", fmt.Errorf("expected exactly one parameter, found %d", len(params))
+	}
+
+	param := params[0]
+	if param == "" {
+		return "", fmt.Errorf("expected parameter %s to be non-empty", name)
+	}
+
+	return param, nil
+}
+
+func sendJSONorErr(v interface{}, w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	if json.NewEncoder(w).Encode(v) != nil {
+		responses.SendError(w, responses.InternalError(errors.New("an internal server error was encountered while returning your response")))
+	}
+
+	return nil
+}
+
+func parseBody(r *http.Request, target interface{}) error {
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(bodyBytes, target)
 }
