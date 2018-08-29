@@ -12,4 +12,7 @@ git:
 install: true
 
 script:
-  - go test -v -race ./...  # Run all the tests with the race detector enabled
+  - sh ./ci/test.sh
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
