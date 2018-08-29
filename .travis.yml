@@ -1,13 +1,18 @@
+sudo: false
+
 language: go
 
 go:
   - 1.10.x
   - tip
 
-before_install:
-  - # go get -t -v ./...
+install: true
+
+before_script:
+  - go install ./vendor/github.com/golangci/golangci-lint/cmd/golangci-lint
 
 script:
+  - golangci-lint run       # run a bunch of code checkers/linters in parallel
   - go test -race -coverprofile=coverage.txt -covermode=atomic
 
 after_success:
