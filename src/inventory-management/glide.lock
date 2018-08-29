@@ -1,8 +1,18 @@
-hash: 63fd8f06918244c5975860fd9707905a2d0afafe41c1300b851dbdf37c56456a
-updated: 2018-08-28T16:49:50.535993-04:00
+hash: ccd6e8f32fd8daf43cca176d28932c8d9e15ebdc6a1f1ddf93f0ae0a4dd29270
+updated: 2018-08-29T10:54:19.302008-04:00
 imports:
+- name: github.com/jmoiron/sqlx
+  version: 0dae4fefe7c0e190f7b5a78dac28a1c82cc8d849
+  subpackages:
+  - reflectx
 - name: github.com/julienschmidt/httprouter
   version: 8c199fb6259ffc1af525cc3ad52ee60ba8359669
 - name: github.com/kelseyhightower/envconfig
   version: f611eb38b3875cc3bd991ca91c51d06446afa14c
+- name: github.com/stretchr/testify
+  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
+  subpackages:
+  - assert
+- name: gopkg.in/DATA-DOG/go-sqlmock.v1
+  version: d76b18b42f285b792bf985118980ce9eacea9d10
 testImports: []

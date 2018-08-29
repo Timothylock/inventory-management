@@ -2,7 +2,9 @@ package items
 
 import "errors"
 
-type Service struct {}
+type Persister interface {
+	MoveItem(ID, direction string) error
+}
 
 var ItemNotFoundErr = errors.New("item not found")
 
@@ -10,6 +12,16 @@ type ItemDetailList []ItemDetail
 type ItemDetail struct {
 	ID, Name, Category, PictureURL, Details, Location, LastPerformedBy string
 	Quantity int
+}
+
+type Service struct {
+	persister Persister
+}
+
+func NewService(p Persister) Service {
+	return Service{
+		persister: p,
+	}
 }
 
 func (s *Service) FetchItems(id, name, category string) (ItemDetailList, error) {

@@ -18,6 +18,12 @@ type API struct {
 	itemsService items.Service
 }
 
+func NewAPI(is items.Service) API {
+	return API {
+		itemsService: is,
+	}
+}
+
 func NewRouter(api *API) http.Handler {
 	router := httprouter.New()
 
