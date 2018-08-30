@@ -7,11 +7,12 @@ import (
 	"github.com/Timothylock/inventory-management/config"
 	"github.com/Timothylock/inventory-management/items"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
 type MySQL struct {
-	conn     *sqlx.DB
+	conn *sqlx.DB
 }
 
 func NewMySQL(cfg *config.Config) (*MySQL, error) {
@@ -20,7 +21,7 @@ func NewMySQL(cfg *config.Config) (*MySQL, error) {
 
 	conn, err := sqlx.Connect("mysql", connStr)
 	if err != nil {
-		return nil, errors.New("unable to open db connection")
+		return nil, err
 	}
 
 	return &MySQL{
@@ -34,7 +35,7 @@ func (m *MySQL) doesIDExist(ID string) (bool, error) {
 
 	err := m.conn.Get(
 		&count,
-		"GET count(1) FROM items WHERE ID = ?",
+		"SELECT count(1) FROM items WHERE ID = ?",
 		ID,
 	)
 	if err != nil {
