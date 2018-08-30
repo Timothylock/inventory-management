@@ -112,6 +112,19 @@ func TestMoveItem(t *testing.T) {
 	}
 }
 
+func TestMoveItemBadBody(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	ip := items.NewMockPersister(mc)
+	server := setupServer(ip, t)
+	defer server.Close()
+
+	resp, err := sendPost(server.URL+"/api/item/move", `{"direction": "in", "id": 123}`)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+}
+
 func TestDeleteItem(t *testing.T) {
 	type testCase struct {
 		testName         string
