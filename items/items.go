@@ -8,6 +8,7 @@ type Persister interface {
 	MoveItem(ID, direction string) error
 	DeleteItem(ID string) error
 	SearchItems(search string) (ItemDetailList, error)
+	AddItem(obj ItemDetail) error
 }
 
 var ItemNotFoundErr = errors.New("item not found")
@@ -45,9 +46,7 @@ func (s *Service) DeleteItem(id string) error {
 }
 
 func (s *Service) AddItem(item ItemDetail) error {
-	// DB Stuff
-
-	return nil
+	return s.persister.AddItem(item)
 }
 
 func (s *Service) MoveItem(id, direction string) error {
