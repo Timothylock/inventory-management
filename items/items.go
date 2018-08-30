@@ -11,6 +11,7 @@ type Persister interface {
 }
 
 var ItemNotFoundErr = errors.New("item not found")
+var ItemAlreadyExistsErr = errors.New("item already exists")
 
 type ItemDetailList []ItemDetail
 type ItemDetail struct {
@@ -43,7 +44,7 @@ func (s *Service) DeleteItem(id string) error {
 	return s.persister.DeleteItem(id)
 }
 
-func (s *Service) AddItem(id string) error {
+func (s *Service) AddItem(item ItemDetail) error {
 	// DB Stuff
 
 	return nil

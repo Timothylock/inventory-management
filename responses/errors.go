@@ -2,8 +2,8 @@ package responses
 
 import (
 	"encoding/json"
-	"net/http"
 	"fmt"
+	"net/http"
 )
 
 type httpError struct {
@@ -40,7 +40,6 @@ func MissingParamError(param string) httpError {
 	}
 }
 
-
 func NotLoggedIn(err error) httpError {
 	return httpError{
 		StatusCode: http.StatusUnauthorized,
@@ -48,7 +47,6 @@ func NotLoggedIn(err error) httpError {
 		Message:    err.Error(),
 	}
 }
-
 
 func ItemNotFound(err error) httpError {
 	return httpError{
@@ -58,4 +56,10 @@ func ItemNotFound(err error) httpError {
 	}
 }
 
-
+func ItemAlreadyExists(err error) httpError {
+	return httpError{
+		StatusCode: http.StatusBadRequest,
+		ErrorCode:  1101,
+		Message:    err.Error(),
+	}
+}

@@ -31,6 +31,7 @@ func NewRouter(api *API) http.Handler {
 	// Items
 	router.Handler("GET", "/api/item/info", middleware.UserRequired(api.SearchItems()))
 	router.Handler("POST", "/api/item/move", middleware.UserRequired(api.MoveItem()))
+	router.Handler("POST", "/api/item", middleware.UserRequired(api.MoveItem()))
 	router.Handler("DELETE", "/api/item", middleware.UserRequired(api.DeleteItem()))
 
 	// User
