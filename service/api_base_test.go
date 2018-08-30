@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -59,6 +60,17 @@ func sendGet(url string) (*http.Response, error) {
 
 	client := &http.Client{}
 	return client.Do(req)
+}
+
+type errReader int
+
+func (errReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("test error")
+}
+
+func TestParseBodyFail(t *testing.T) {
+	testRequest := httptest.NewRequest(http.MethodPost, "/", errReader(0))
+	assert.Error(t, parseBody(testRequest, nil))
 }
 
 func TestNotImplemented(t *testing.T) {

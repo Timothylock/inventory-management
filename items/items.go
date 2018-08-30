@@ -1,16 +1,16 @@
 package items
 
-import (
-	"errors"
-)
+import "errors"
 
 type Persister interface {
 	MoveItem(ID, direction string) error
 	DeleteItem(ID string) error
 	SearchItems(search string) (ItemDetailList, error)
+	AddItem(obj ItemDetail) error
 }
 
 var ItemNotFoundErr = errors.New("item not found")
+var ItemAlreadyExistsErr = errors.New("item already exists")
 
 type ItemDetailList []ItemDetail
 type ItemDetail struct {
@@ -43,10 +43,8 @@ func (s *Service) DeleteItem(id string) error {
 	return s.persister.DeleteItem(id)
 }
 
-func (s *Service) AddItem(id string) error {
-	// DB Stuff
-
-	return nil
+func (s *Service) AddItem(item ItemDetail) error {
+	return s.persister.AddItem(item)
 }
 
 func (s *Service) MoveItem(id, direction string) error {

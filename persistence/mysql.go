@@ -85,6 +85,23 @@ func (m *MySQL) MoveItem(ID, direction string) error {
 	return err
 }
 
+func (m *MySQL) AddItem(obj items.ItemDetail) error {
+	exist, err := m.doesIDExist(obj.ID)
+	if err != nil {
+		return err
+	}
+	if exist {
+		return items.ItemAlreadyExistsErr
+	}
+
+	_, err = m.conn.Exec(
+		`INSERT INTO items (ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, LAST_PERFORMED_BY, QUANTITY, STATUS)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		obj.ID, obj.Name, obj.Category, obj.PictureURL, obj.Details, obj.Location, obj.LastPerformedBy, obj.Quantity, "checked in",
+	)
+	return err
+}
+
 func (m *MySQL) DeleteItem(ID string) error {
 	r, err := m.conn.Exec(
 		"DELETE FROM items WHERE ID = ?",

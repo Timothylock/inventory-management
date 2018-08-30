@@ -31,6 +31,7 @@ func NewRouter(api *API) http.Handler {
 	// Items
 	router.Handler("GET", "/api/item/info", middleware.UserRequired(api.SearchItems()))
 	router.Handler("POST", "/api/item/move", middleware.UserRequired(api.MoveItem()))
+	router.Handler("POST", "/api/item", middleware.UserRequired(api.AddItem()))
 	router.Handler("DELETE", "/api/item", middleware.UserRequired(api.DeleteItem()))
 
 	// User
@@ -67,13 +68,11 @@ func getRequiredParam(r *http.Request, name string) (string, error) {
 	return param, nil
 }
 
-func sendJSONorErr(v interface{}, w http.ResponseWriter) error {
+func sendJSONorErr(v interface{}, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	if json.NewEncoder(w).Encode(v) != nil {
 		responses.SendError(w, responses.InternalError(errors.New("an internal server error was encountered while returning your response")))
 	}
-
-	return nil
 }
 
 func parseBody(r *http.Request, target interface{}) error {

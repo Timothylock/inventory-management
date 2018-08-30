@@ -16,6 +16,7 @@ const (
 	updateItem    = `UPDATE items.+`
 	doesItemExist = `SELECT count\(1\) FROM items.+`
 	deleteItem    = `DELETE FROM items.+`
+	addItem       = `INSERT INTO items`
 	searchItems   = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
 )
 
@@ -244,4 +245,67 @@ func TestSearchItems(t *testing.T) {
 			assert.Equal(t, tc.expected, r)
 		})
 	}
+}
+
+func TestAddItemAlreadyExists(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"COUNT(1)"})
+	rows.AddRow(1)
+
+	mock.ExpectQuery(doesItemExist).
+		WithArgs("1234").
+		WillReturnRows(rows)
+
+	err := db.AddItem(items.ItemDetail{ID: "1234"})
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAddItemAlreadyExistsError(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"COUNT(1)"})
+	rows.AddRow(1)
+
+	mock.ExpectQuery(doesItemExist).
+		WithArgs("1234").
+		WillReturnError(errors.New("some error"))
+
+	err := db.AddItem(items.ItemDetail{ID: "1234"})
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAddItemSuccess(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"COUNT(1)"})
+	rows.AddRow(0)
+
+	item := items.ItemDetail{
+		ID:              "ID",
+		Name:            "NAME",
+		Category:        "CATEGORY",
+		PictureURL:      "PICTURE_URL",
+		Details:         "DETAILS",
+		Location:        "LOCATION",
+		LastPerformedBy: "USERNAME",
+		Quantity:        1,
+		Status:          "checked in",
+	}
+
+	mock.ExpectQuery(doesItemExist).
+		WithArgs("ID").
+		WillReturnRows(rows)
+	mock.ExpectExec(addItem).
+		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", 1, "checked in").
+		WillReturnResult(sqlmock.NewResult(123, 1))
+
+	err := db.AddItem(item)
+	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
 }
