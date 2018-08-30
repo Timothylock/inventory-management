@@ -9,6 +9,8 @@ An inventory management system made specifically for use of myself and used by o
 # Installing
 TODO: Docker image
 
+Required Go >= 1.8
+
 ## Environment Variables
 Several environment variables must be set in order for this system to boot. They should all be self explanatory.
 - DB_URL
