@@ -1,8 +1,6 @@
 package items
 
-import (
-	"errors"
-)
+import "errors"
 
 type Persister interface {
 	MoveItem(ID, direction string) error

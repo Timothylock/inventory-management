@@ -313,3 +313,143 @@ func TestSearchItemsMissingQuery(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 }
+
+func TestAddItem(t *testing.T) {
+	type testCase struct {
+		testName   string
+		setMock    func(*items.MockPersister)
+		sendBody   AddBody
+		expectCode int
+	}
+
+	testCases := []testCase{
+		{
+			testName: "success",
+			setMock: func(ip *items.MockPersister) {
+				ip.EXPECT().AddItem(items.ItemDetail{
+					ID:              "1",
+					Name:            "foo",
+					Category:        "fi",
+					PictureURL:      "bar",
+					Details:         "fum",
+					Location:        "bah",
+					Quantity:        1,
+					LastPerformedBy: "0",
+					Status:          "checked in",
+				}).Return(nil)
+			},
+			sendBody: AddBody{
+				ID:         "1",
+				Name:       "foo",
+				Category:   "fi",
+				PictureURL: "bar",
+				Details:    "fum",
+				Location:   "bah",
+				Quantity:   1,
+			},
+			expectCode: 200,
+		},
+		{
+			testName: "Missing in body",
+			setMock:  func(ip *items.MockPersister) {},
+			sendBody: AddBody{
+				ID:         "1",
+				Name:       "",
+				Category:   "",
+				PictureURL: "bar",
+				Details:    "fum",
+				Location:   "bah",
+				Quantity:   1,
+			},
+			expectCode: 400,
+		},
+		{
+			testName: "item already exists",
+			setMock: func(ip *items.MockPersister) {
+				ip.EXPECT().AddItem(items.ItemDetail{
+					ID:              "1",
+					Name:            "foo",
+					Category:        "fi",
+					PictureURL:      "bar",
+					Details:         "fum",
+					Location:        "bah",
+					Quantity:        1,
+					LastPerformedBy: "0",
+					Status:          "checked in",
+				}).Return(items.ItemAlreadyExistsErr)
+			},
+			sendBody: AddBody{
+				ID:         "1",
+				Name:       "foo",
+				Category:   "fi",
+				PictureURL: "bar",
+				Details:    "fum",
+				Location:   "bah",
+				Quantity:   1,
+			},
+			expectCode: 400,
+		},
+		{
+			testName: "internal error",
+			setMock: func(ip *items.MockPersister) {
+				ip.EXPECT().AddItem(items.ItemDetail{
+					ID:              "1",
+					Name:            "foo",
+					Category:        "fi",
+					PictureURL:      "bar",
+					Details:         "fum",
+					Location:        "bah",
+					Quantity:        1,
+					LastPerformedBy: "0",
+					Status:          "checked in",
+				}).Return(errors.New("sorry"))
+			},
+			sendBody: AddBody{
+				ID:         "1",
+				Name:       "foo",
+				Category:   "fi",
+				PictureURL: "bar",
+				Details:    "fum",
+				Location:   "bah",
+				Quantity:   1,
+			},
+			expectCode: 500,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			ip := items.NewMockPersister(mc)
+			tc.setMock(ip)
+
+			server := setupServer(ip, t)
+			defer server.Close()
+
+			resp, err := sendPost(server.URL+"/api/item", tc.sendBody)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectCode, resp.StatusCode)
+
+			if tc.expectCode == 200 {
+				//b, err := json.Marshal(tc.expectedResponse)
+				assert.NoError(t, err)
+				//assert.JSONEq(t, string(b), string(getBody(t, resp)))
+			}
+		})
+	}
+}
+
+func TestAddItemBadBody(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	ip := items.NewMockPersister(mc)
+	server := setupServer(ip, t)
+	defer server.Close()
+
+	resp, err := sendPost(server.URL+"/api/item", `{"id": 123}`)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+}
