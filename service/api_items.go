@@ -14,15 +14,16 @@ type MoveBody struct {
 
 func (a *API) SearchItems() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id := getOptionalParam(r, "id")
-		name := getOptionalParam(r, "name")
-		cat := getOptionalParam(r, "cat")
-		res, err := a.itemsService.FetchItems(id, name, cat)
+		search, err := getRequiredParam(r, "q")
+		if err != nil {
+			responses.SendError(w, responses.MissingParamError("q"))
+			return
+		}
 
-		if err != nil && err == items.ItemNotFoundErr {
-			responses.SendError(w, responses.ItemNotFound(err))
-		} else if err != nil {
+		res, err := a.itemsService.FetchItems(search)
+		if err != nil {
 			responses.SendError(w, responses.InternalError(err))
+			return
 		}
 
 		sendJSONorErr(res, w)

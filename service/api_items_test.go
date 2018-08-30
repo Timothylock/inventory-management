@@ -197,3 +197,119 @@ func TestDeleteItem(t *testing.T) {
 		})
 	}
 }
+
+func TestSearchItems(t *testing.T) {
+	type testCase struct {
+		testName         string
+		setMock          func(*items.MockPersister)
+		expectCode       int
+		expectedResponse items.ItemDetailList
+	}
+
+	testCases := []testCase{
+		{
+			testName: "success",
+			setMock: func(ip *items.MockPersister) {
+				ip.EXPECT().SearchItems("foo").Return(items.ItemDetailList{
+					{
+						ID:              "1",
+						Name:            "foo",
+						Category:        "fi",
+						PictureURL:      "bar",
+						Details:         "fum",
+						Location:        "bah",
+						LastPerformedBy: "humbug",
+						Quantity:        1,
+						Status:          "checked in",
+					},
+					{
+						ID:              "2",
+						Name:            "foo",
+						Category:        "fi",
+						PictureURL:      "bar",
+						Details:         "fum",
+						Location:        "bah",
+						LastPerformedBy: "humbug",
+						Quantity:        1,
+						Status:          "checked in",
+					},
+				}, nil)
+			},
+			expectCode: 200,
+			expectedResponse: items.ItemDetailList{
+				{
+					ID:              "1",
+					Name:            "foo",
+					Category:        "fi",
+					PictureURL:      "bar",
+					Details:         "fum",
+					Location:        "bah",
+					LastPerformedBy: "humbug",
+					Quantity:        1,
+					Status:          "checked in",
+				},
+				{
+					ID:              "2",
+					Name:            "foo",
+					Category:        "fi",
+					PictureURL:      "bar",
+					Details:         "fum",
+					Location:        "bah",
+					LastPerformedBy: "humbug",
+					Quantity:        1,
+					Status:          "checked in",
+				},
+			},
+		},
+		{
+			testName: "error",
+			setMock: func(ip *items.MockPersister) {
+				ip.EXPECT().SearchItems("foo").Return(nil, errors.New("some error"))
+			},
+			expectCode: 500,
+		},
+		{
+			testName: "error",
+			setMock: func(ip *items.MockPersister) {
+				ip.EXPECT().SearchItems("foo").Return(nil, errors.New("some error"))
+			},
+			expectCode: 500,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			ip := items.NewMockPersister(mc)
+			tc.setMock(ip)
+
+			server := setupServer(ip, t)
+			defer server.Close()
+
+			resp, err := sendGet(server.URL + "/api/item/info?q=foo")
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectCode, resp.StatusCode)
+
+			if tc.expectCode == 200 {
+				b, err := json.Marshal(tc.expectedResponse)
+				assert.NoError(t, err)
+				assert.JSONEq(t, string(b), string(getBody(t, resp)))
+			}
+		})
+	}
+}
+
+func TestSearchItemsMissingQuery(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	ip := items.NewMockPersister(mc)
+	server := setupServer(ip, t)
+	defer server.Close()
+
+	resp, err := sendGet(server.URL + "/api/item/info")
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+}

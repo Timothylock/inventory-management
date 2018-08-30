@@ -16,6 +16,7 @@ const (
 	updateItem    = `UPDATE items.+`
 	doesItemExist = `SELECT count\(1\) FROM items.+`
 	deleteItem    = `DELETE FROM items.+`
+	searchItems   = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
 )
 
 func newTestDB(t *testing.T) (*MySQL, sqlmock.Sqlmock) {
@@ -158,4 +159,89 @@ func TestDeleteItemSuccess(t *testing.T) {
 	err := db.DeleteItem("1234")
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestSearchItems(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	type testCase struct {
+		testName string
+		addRows  func(rows *sqlmock.Rows)
+		expected items.ItemDetailList
+	}
+
+	testCases := []testCase{
+		{
+			testName: "find 1 item",
+			addRows: func(rows *sqlmock.Rows) {
+				rows.AddRow("1", "foo", "fi", "bar", "fum", "bah", "humbug", 1, "checked in")
+			},
+			expected: items.ItemDetailList{
+				{
+					ID:              "1",
+					Name:            "foo",
+					Category:        "fi",
+					PictureURL:      "bar",
+					Details:         "fum",
+					Location:        "bah",
+					LastPerformedBy: "humbug",
+					Quantity:        1,
+					Status:          "checked in",
+				},
+			},
+		},
+		{
+			testName: "find multiple items",
+			addRows: func(rows *sqlmock.Rows) {
+				rows.AddRow("1", "foo", "fi", "bar", "fum", "bah", "humbug", 1, "checked in")
+				rows.AddRow("2", "foo", "fi", "bar", "fum", "bah", "humbug", 1, "checked in")
+			},
+			expected: items.ItemDetailList{
+				{
+					ID:              "1",
+					Name:            "foo",
+					Category:        "fi",
+					PictureURL:      "bar",
+					Details:         "fum",
+					Location:        "bah",
+					LastPerformedBy: "humbug",
+					Quantity:        1,
+					Status:          "checked in",
+				},
+				{
+					ID:              "2",
+					Name:            "foo",
+					Category:        "fi",
+					PictureURL:      "bar",
+					Details:         "fum",
+					Location:        "bah",
+					LastPerformedBy: "humbug",
+					Quantity:        1,
+					Status:          "checked in",
+				},
+			},
+		},
+		{
+			testName: "find no items",
+			addRows:  func(rows *sqlmock.Rows) {},
+			expected: items.ItemDetailList{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			rows := sqlmock.NewRows([]string{"ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", "QUANTITY", "STATUS"})
+			tc.addRows(rows)
+
+			mock.ExpectQuery(searchItems).
+				WithArgs("foo").
+				WillReturnRows(rows)
+
+			r, err := db.SearchItems("foo")
+			assert.NoError(t, err)
+			assert.NoError(t, mock.ExpectationsWereMet())
+			assert.Equal(t, tc.expected, r)
+		})
+	}
 }

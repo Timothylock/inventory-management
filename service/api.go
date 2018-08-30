@@ -52,11 +52,6 @@ func (a *API) NotImplemented() http.Handler {
 	})
 }
 
-func getOptionalParam(r *http.Request, name string) string {
-	param, _ := getRequiredParam(r, name)
-	return param
-}
-
 func getRequiredParam(r *http.Request, name string) (string, error) {
 	params := r.URL.Query()[name]
 

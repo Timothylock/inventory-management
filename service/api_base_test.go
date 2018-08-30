@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/Timothylock/inventory-management/items"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func setupServer(ip items.Persister, t *testing.T) *httptest.Server {
@@ -45,4 +47,29 @@ func sendDelete(url string) (*http.Response, error) {
 
 	client := &http.Client{}
 	return client.Do(req)
+}
+
+func sendGet(url string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	return client.Do(req)
+}
+
+func TestNotImplemented(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	ip := items.NewMockPersister(mc)
+	server := setupServer(ip, t)
+	defer server.Close()
+
+	resp, err := sendPost(server.URL+"/api/user/add", "")
+	assert.NoError(t, err)
+	assert.Equal(t, "Not yet implemented\n", getBody(t, resp))
 }

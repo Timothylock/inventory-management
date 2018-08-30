@@ -45,6 +45,21 @@ func (m *MySQL) doesIDExist(ID string) (bool, error) {
 	return count > 0, err
 }
 
+func (m *MySQL) SearchItems(search string) (items.ItemDetailList, error) {
+	dl := items.ItemDetailList{}
+	err := m.conn.Select(
+		&dl,
+		`SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM
+		(
+		SELECT * FROM items WHERE MATCH (ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION) AGAINST (? IN NATURAL LANGUAGE MODE)
+		) AS search
+		JOIN users ON search.LAST_PERFORMED_BY = users.ID`,
+		search,
+	)
+
+	return dl, err
+}
+
 func (m *MySQL) MoveItem(ID, direction string) error {
 	var status string
 	if direction == "in" {
