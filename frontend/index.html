@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <title>Inventory Management</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+      <link rel="stylesheet" href="./css/styles.css">
+  </head>
+  <body>
+  <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+      <ul class="navbar-nav">
+          <a class="navbar-brand" href="#">Inventory Management</a>
+      </ul>
+  </nav>
+
+    <div class="container-fluid" id="main-content">
+		<div class="row">
+            <div class="col-md-4 row-eq-height">
+                <div class="col-md-12">
+					<h3 class="text-center">
+						Check In/Out
+					</h3>
+					<p class="text-center">Allows you to check in and out items to and from inventory</p>
+					<button type="button" class="btn btn-block btn-primary">
+						Check In
+					</button>
+					<button type="button" class="btn btn-block btn-primary">
+						Check Out
+					</button>
+				</div>
+			</div>
+			<div class="col-md-4 row-eq-height">
+                <div class="col-md-12">
+					<h3 class="text-center">
+						Item Search
+					</h3>
+					<p class="text-center">Allows you to search for an item by keyword</p>
+					<form role="form" lpformnum="2">
+						<div class="form-group">
+							<label for="query">
+								Search Keywords
+							</label>
+							<input type="text" class="form-control" id="query">
+						</div>
+						<button type="button" class="btn btn-primary" id="search">
+							Search
+						</button>
+					</form>
+				</div>
+			</div>
+			<div class="col-md-4 row-eq-height">
+                <div class="col-md-12">
+					<h3 class="text-center">
+						Advanced Operations
+					</h3>
+					<p class="text-center">Perform other actions</p>
+					<button type="button" class="btn btn-block btn-info">
+						New Item
+					</button>
+					<button type="button" class="btn btn-block btn-danger">
+						Delete Item
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <script>
+        $("#search").click(function() {
+            window.location.href = "search.html?q=" + $("#query").val();
+        });
+	</script>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/scripts.js"></script>
+  </body>
+</html>

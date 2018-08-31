@@ -41,7 +41,7 @@ func NewRouter(api *API) http.Handler {
 
 	// Frontend
 	mux := http.NewServeMux()
-	mux.Handle("/", http.FileServer(http.Dir("/Users/timothylock/Documents/GitHub/inventory-management/frontend/")))
+	mux.Handle("/", http.FileServer(http.Dir("/Users/timothylock/go/src/github.com/Timothylock/inventory-management/frontend")))
 	mux.Handle("/api/", router)
 
 	return mux
