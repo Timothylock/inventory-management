@@ -4,10 +4,11 @@
       <title>Inventory Management</title>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+      <link rel="stylesheet" href="css/bootstrap.min.css">
+      <script src="js/popper.min.js"></script>
+      <script src="js/jquery.min.js"></script>
+      <script src="js/bootstrap.min.js"></script>
+      <script src="js/scripts.js"></script>
       <link rel="stylesheet" href="./css/styles.css">
   </head>
   <body>
@@ -22,14 +23,11 @@
             <div class="col-md-4 row-eq-height">
                 <div class="col-md-12">
 					<h3 class="text-center">
-						Check In/Out
+						Scan Existing Item
 					</h3>
-					<p class="text-center">Allows you to check in and out items to and from inventory</p>
-					<button type="button" class="btn btn-block btn-primary">
-						Check In
-					</button>
-					<button type="button" class="btn btn-block btn-primary">
-						Check Out
+					<p class="text-center">Allows you to search for an item by scanning its barcode.</p>
+					<button type="button" class="btn btn-block btn-primary" id="itemOp">
+						Scan Item
 					</button>
 				</div>
 			</div>
@@ -38,7 +36,7 @@
 					<h3 class="text-center">
 						Item Search
 					</h3>
-					<p class="text-center">Allows you to search for an item by keyword</p>
+					<p class="text-center">Allows you to search for an item by keyword or ID (manually inputting barcode)</p>
 					<form role="form" lpformnum="2">
 						<div class="form-group">
 							<label for="query">
@@ -61,9 +59,6 @@
 					<button type="button" class="btn btn-block btn-info">
 						New Item
 					</button>
-					<button type="button" class="btn btn-block btn-danger">
-						Delete Item
-					</button>
 				</div>
 			</div>
 		</div>
@@ -72,6 +67,9 @@
     <script>
         $("#search").click(function() {
             window.location.href = "search.html?q=" + $("#query").val();
+        });
+        $("#itemOp").click(function() {
+            window.location.href = "scan.html";
         });
 	</script>
 

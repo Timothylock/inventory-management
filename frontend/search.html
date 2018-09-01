@@ -4,10 +4,11 @@
       <title>Search Results</title>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+      <link rel="stylesheet" href="css/bootstrap.min.css">
+      <script src="js/popper.min.js"></script>
+      <script src="js/jquery.min.js"></script>
+      <script src="js/bootstrap.min.js"></script>
+      <script src="js/scripts.js"></script>
       <link rel="stylesheet" href="./css/styles.css">
   </head>
   <body>
@@ -32,13 +33,29 @@
             </div>
         </div>
 		<div class="row" id="results">
-
+            <button class="btn btn-default" id="btn-confirm">Confirm</button>
 		</div>
 	</div>
 
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/scripts.js"></script>
+  <!-- The Modal -->
+  <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="mi-modal">
+      <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h4 class="modal-title" id="myModalLabel"></h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+
+              </div>
+              <div class="modal-body">
+                  <p id="myModalBody"></p>
+              </div>
+              <div class="modal-footer">
+                  <a class="btn btn-primary" id="modal-btn-yes" href="#" role="button">Yes</a>
+                  <button type="button" class="btn btn-default" id="modal-btn-no">No</button>
+              </div>
+          </div>
+      </div>
+  </div>
   </body>
 
 
@@ -48,6 +65,18 @@
         key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
         var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
         return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
+
+    $("#modal-btn-no").on("click", function(){
+        $("#mi-modal").modal('hide');
+    });
+
+    function confirmCheckout(id, name) {
+        $("#myModalLabel").text("Check Out Item");
+        $("#myModalBody").text("You are about to check out item " + name + " with ID:" + id + ". Are you sure?");
+        $("#modal-btn-yes").attr("href", "http://www.google.com/");
+        $("#mi-modal").modal('show');
+
     }
 
     var settings = {
@@ -70,22 +99,28 @@
 
         for (var i = 0; i < response.length; i++) {
             var res = "";
-            res = res + "<div class=\"col-md-4 row-eq-height\">";
-            res = res + "<div class=\"col-md-12\">";
-			res = res + "<h3 class=\"text-center\">" + response[i].Name + "</h3>";
-			res = res + "<img class =\"center-fit\" src=\"" + response[i].PictureURL + "\" alt=\"" + response[i].Name + "\">";
-            res = res + "<p>ID: " + response[i].ID + "</p>";
-            res = res + "<p>Details: " + response[i].Details + "</p>";
-            res = res + "<p>Category: " + response[i].Category + "</p>";
-            res = res + "<p>Quantity: " + response[i].Quantity + "</p>";
-            res = res + "<p>Location: " + response[i].Location + "</p>";
-            res = res + "<p>Status: " + response[i].Status + "</p>";
-            res = res + "<p>Last used by: " + response[i].LastPerformedBy + "</p>";
-			res = res + "</div>";
-			res = res + "</div>";
+            res+= "<div class=\"col-md-4 row-eq-height\">";
+            res+= "<div class=\"col-md-12\">";
+			res+= "<h3 class=\"text-center\">" + response[i].Name + "</h3>";
+            res+= "<img class =\"center-fit-50\" src=\"" + response[i].PictureURL + "\" alt=\"" + response[i].Name + "\">";
+            res+= "<p>ID: " + response[i].ID + "</p>";
+            res+= "<p>Details: " + response[i].Details + "</p>";
+            res+= "<p>Category: " + response[i].Category + "</p>";
+            res+= "<p>Quantity: " + response[i].Quantity + "</p>";
+            res+= "<p>Location: " + response[i].Location + "</p>";
+            res+= "<p>Status: " + response[i].Status + "</p>";
+            res+= "<p>Last used by: " + response[i].LastPerformedBy + "</p>";
+            res+= "<button type=\"button\" class=\"btn btn-block btn-primary\">Check In</button>";
+            res+= "<button type=\"button\" class=\"btn btn-block btn-primary\" onclick=\"confirmCheckout\('" + response[i].ID + "','" + response[i].Name + "'\)\">Check Out</button>";
+            res+= "<button type=\"button\" class=\"btn btn-block btn-warning\">Edit Item</button>";
+            res+= "<button type=\"button\" class=\"btn btn-block btn-danger\">Delete Item</button>";
+			res+= "</div>";
+			res+= "</div>";
 
 			$("#results").append(res);
         }
     });
+
+
 </script>
 </html>
