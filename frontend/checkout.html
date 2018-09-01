@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Check Out Item</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/popper.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/scripts.js"></script>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+    <ul class="navbar-nav">
+        <a class="navbar-brand" href="#">Inventory Management</a>
+    </ul>
+</nav>
+
+<div class="container-fluid" id="main-content">
+    <div class="row" id="searching">
+        <div class="col-md-12">
+            <h3 class="text-center">Checking Out</h3>
+            <p class="text-center">The system is checking out the item. Please wait.</p>
+            <div class="loader"></div>
+        </div>
+    </div>
+    <div class="row" id="complete" style="display: none;">
+        <div class="col-md-12">
+            <h3 class="text-center">Complete!</h3>
+            <p class="text-center" id="completeBody">The item was successfully checked out.</p>
+            <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
+        </div>
+    </div>
+    <div class="row" id="noresults" style="display: none;">
+        <div class="col-md-12">
+            <h3 class="text-center">No Results</h3>
+            <p class="text-center" id="noresultsmsg"></p>
+            <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
+        </div>
+    </div>
+    <div class="row" id="results"></div>
+</div>
+</body>
+
+
+<!--TODO: DO this properly-->
+<script>
+    function qs(key) {
+        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+        var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
+
+    var settings = {
+        "async": true,
+        "crossDomain": true,
+        "url": "api/item/move",
+        "method": "POST",
+        "headers": {
+        },
+        "processData": false,
+        "data": "{\"direction\": \"out\",\"id\": \"" + qs('id') + "\"\n}"
+    };
+
+    $.ajax(settings).done(function (response) {
+        $("#searching").hide();
+        $("#complete").show();
+    });
+
+
+</script>
+</html>

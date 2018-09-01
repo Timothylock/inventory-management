@@ -30,11 +30,10 @@
             <div class="col-md-12">
                 <h3 class="text-center">No Results</h3>
                 <p class="text-center" id="noresultsmsg"></p>
+                <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
             </div>
         </div>
-		<div class="row" id="results">
-            <button class="btn btn-default" id="btn-confirm">Confirm</button>
-		</div>
+		<div class="row" id="results"></div>
 	</div>
 
   <!-- The Modal -->
@@ -74,9 +73,16 @@
     function confirmCheckout(id, name) {
         $("#myModalLabel").text("Check Out Item");
         $("#myModalBody").text("You are about to check out item " + name + " with ID:" + id + ". Are you sure?");
-        $("#modal-btn-yes").attr("href", "http://www.google.com/");
+        $("#modal-btn-yes").attr("href", "checkout.html?id=" + id + "&name=" + name);
         $("#mi-modal").modal('show');
+    }
 
+    function confirmDelete(id, name) {
+        $("#myModalLabel").text("Delete Item");
+        $("#myModalBody").text("You are about to delete " + name + " with ID:" + id + ". Are you sure? This action cannot be undone and will be logged!");
+        $("#modal-btn-yes").attr("href", "delete.html?id=" + id + "&name=" + name);
+        $("#modal-btn-yes").attr("class", "btn btn-danger");
+        $("#mi-modal").modal('show');
     }
 
     var settings = {
@@ -113,7 +119,7 @@
             res+= "<button type=\"button\" class=\"btn btn-block btn-primary\">Check In</button>";
             res+= "<button type=\"button\" class=\"btn btn-block btn-primary\" onclick=\"confirmCheckout\('" + response[i].ID + "','" + response[i].Name + "'\)\">Check Out</button>";
             res+= "<button type=\"button\" class=\"btn btn-block btn-warning\">Edit Item</button>";
-            res+= "<button type=\"button\" class=\"btn btn-block btn-danger\">Delete Item</button>";
+            res+= "<button type=\"button\" class=\"btn btn-block btn-danger\" onclick=\"confirmDelete\('" + response[i].ID + "','" + response[i].Name + "'\)\">Delete Item</button>";
 			res+= "</div>";
 			res+= "</div>";
 
