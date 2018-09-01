@@ -15,7 +15,7 @@ import (
 const (
 	updateItem    = `UPDATE items.+`
 	doesItemExist = `SELECT count\(1\) FROM items.+`
-	deleteItem    = `DELETE FROM items.+`
+	deleteItem    = `UPDATE items SET DELETED=1.+`
 	addItem       = `INSERT INTO items`
 	searchItems   = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
 )

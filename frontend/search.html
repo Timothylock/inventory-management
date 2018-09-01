@@ -33,6 +33,13 @@
                 <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
             </div>
         </div>
+        <div class="row" id="error" style="display: none;">
+            <div class="col-md-12">
+                <h3 class="text-center">Error</h3>
+                <p class="text-center" id="errorBody"></p>
+                <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
+            </div>
+        </div>
 		<div class="row" id="results"></div>
 	</div>
 
@@ -77,6 +84,13 @@
         $("#mi-modal").modal('show');
     }
 
+    function confirmCheckin(id, name, location) {
+        $("#myModalLabel").text("Check In Item");
+        $("#myModalBody").text("You are about to check in item " + name + " with ID:" + id + ". Are you sure?\nPlease make sure it goes back to " + location + ". You can edit the location after checking the item in.");
+        $("#modal-btn-yes").attr("href", "checkin.html?id=" + id + "&name=" + name);
+        $("#mi-modal").modal('show');
+    }
+
     function confirmDelete(id, name) {
         $("#myModalLabel").text("Delete Item");
         $("#myModalBody").text("You are about to delete " + name + " with ID:" + id + ". Are you sure? This action cannot be undone and will be logged!");
@@ -85,48 +99,46 @@
         $("#mi-modal").modal('show');
     }
 
-    var settings = {
-        "async": true,
-        "url": "/api/item/info?q=" + qs("q"),
-        "method": "GET",
-        "headers": {
-            "content-type": "application/json"
+    $.ajax({ cache: false,
+        url: "/api/item/info?q=" + qs("q"),
+        method: "GET",
+        success: function (response) {
+            $("#searching").hide();
+
+            if (response.length === 0) {
+                $("#noresultsmsg").text("No results could be found for " + qs("q") + ". Perhaps try with a different keyword?");
+                $("#noresults").show();
+            }
+
+            for (var i = 0; i < response.length; i++) {
+                var res = "";
+                res+= "<div class=\"col-md-4 row-eq-height\">";
+                res+= "<div class=\"col-md-12\">";
+                res+= "<h3 class=\"text-center\">" + response[i].Name + "</h3>";
+                res+= "<img class =\"center-fit-50\" src=\"" + response[i].PictureURL + "\" alt=\"" + response[i].Name + "\">";
+                res+= "<p>ID: " + response[i].ID + "</p>";
+                res+= "<p>Details: " + response[i].Details + "</p>";
+                res+= "<p>Category: " + response[i].Category + "</p>";
+                res+= "<p>Quantity: " + response[i].Quantity + "</p>";
+                res+= "<p>Location: " + response[i].Location + "</p>";
+                res+= "<p>Status: " + response[i].Status + "</p>";
+                res+= "<p>Last used by: " + response[i].LastPerformedBy + "</p>";
+                res+= "<button type=\"button\" class=\"btn btn-block btn-primary\" onclick=\"confirmCheckin\('" + response[i].ID + "','" + response[i].Name + "','" + response[i].Location +"'\)\">Check In</button>";
+                res+= "<button type=\"button\" class=\"btn btn-block btn-primary\" onclick=\"confirmCheckout\('" + response[i].ID + "','" + response[i].Name + "'\)\">Check Out</button>";
+                res+= "<button type=\"button\" class=\"btn btn-block btn-warning\">Edit Item</button>";
+                res+= "<button type=\"button\" class=\"btn btn-block btn-danger\" onclick=\"confirmDelete\('" + response[i].ID + "','" + response[i].Name + "'\)\">Delete Item</button>";
+                res+= "</div>";
+                res+= "</div>";
+
+                $("#results").append(res);
+            }
         },
-        "processData": false
-    };
-
-    $.ajax(settings).done(function (response) {
-        $("#searching").hide();
-
-        if (response.length === 0) {
-            $("#noresultsmsg").text("No results could be found for " + qs("q") + ". Perhaps try with a different keyword?");
-            $("#noresults").show();
-		}
-
-        for (var i = 0; i < response.length; i++) {
-            var res = "";
-            res+= "<div class=\"col-md-4 row-eq-height\">";
-            res+= "<div class=\"col-md-12\">";
-			res+= "<h3 class=\"text-center\">" + response[i].Name + "</h3>";
-            res+= "<img class =\"center-fit-50\" src=\"" + response[i].PictureURL + "\" alt=\"" + response[i].Name + "\">";
-            res+= "<p>ID: " + response[i].ID + "</p>";
-            res+= "<p>Details: " + response[i].Details + "</p>";
-            res+= "<p>Category: " + response[i].Category + "</p>";
-            res+= "<p>Quantity: " + response[i].Quantity + "</p>";
-            res+= "<p>Location: " + response[i].Location + "</p>";
-            res+= "<p>Status: " + response[i].Status + "</p>";
-            res+= "<p>Last used by: " + response[i].LastPerformedBy + "</p>";
-            res+= "<button type=\"button\" class=\"btn btn-block btn-primary\">Check In</button>";
-            res+= "<button type=\"button\" class=\"btn btn-block btn-primary\" onclick=\"confirmCheckout\('" + response[i].ID + "','" + response[i].Name + "'\)\">Check Out</button>";
-            res+= "<button type=\"button\" class=\"btn btn-block btn-warning\">Edit Item</button>";
-            res+= "<button type=\"button\" class=\"btn btn-block btn-danger\" onclick=\"confirmDelete\('" + response[i].ID + "','" + response[i].Name + "'\)\">Delete Item</button>";
-			res+= "</div>";
-			res+= "</div>";
-
-			$("#results").append(res);
+        error: function (ajaxContext) {
+            var error = JSON.parse(ajaxContext.responseText);
+            $("#errorBody").text("Error code " + error.code + " - " + error.details);
+            $("#searching").hide();
+            $("#error").show();
         }
     });
-
-
 </script>
 </html>

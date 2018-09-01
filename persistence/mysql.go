@@ -51,7 +51,7 @@ func (m *MySQL) SearchItems(search string) (items.ItemDetailList, error) {
 		&dl,
 		`SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM
 		(
-		SELECT * FROM items WHERE MATCH (ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION) AGAINST (? IN NATURAL LANGUAGE MODE)
+		SELECT * FROM items WHERE MATCH (ID, NAME, CATEGORY, DETAILS, LOCATION) AGAINST (? IN NATURAL LANGUAGE MODE) AND DELETED=0
 		) AS search
 		JOIN users ON search.LAST_PERFORMED_BY = users.ID`,
 		search,
@@ -103,8 +103,7 @@ func (m *MySQL) AddItem(obj items.ItemDetail) error {
 }
 
 func (m *MySQL) DeleteItem(ID string) error {
-	r, err := m.conn.Exec(
-		"DELETE FROM items WHERE ID = ?",
+	r, err := m.conn.Exec(`UPDATE items SET DELETED=1 WHERE ID=?`,
 		ID,
 	)
 	if err != nil {

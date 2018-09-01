@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Check Out Item</title>
+    <title>Check In Item</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="css/bootstrap.min.css">
@@ -21,15 +21,15 @@
 <div class="container-fluid" id="main-content">
     <div class="row" id="searching">
         <div class="col-md-12">
-            <h3 class="text-center">Checking Out</h3>
-            <p class="text-center">The system is checking out the item. Please wait.</p>
+            <h3 class="text-center">Checking In</h3>
+            <p class="text-center">The system is checking in the item. Please wait.</p>
             <div class="loader"></div>
         </div>
     </div>
     <div class="row" id="complete" style="display: none;">
         <div class="col-md-12">
             <h3 class="text-center">Complete!</h3>
-            <p class="text-center" id="completeBody">The item was successfully checked out.</p>
+            <p class="text-center" id="completeBody">The item was successfully checked in.</p>
             <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
         </div>
     </div>
@@ -56,7 +56,7 @@
     $.ajax({ cache: false,
         url: "api/item/move",
         method: "POST",
-        data: "{\"direction\": \"out\",\"id\": \"" + qs('id') + "\"\n}",
+        data: "{\"direction\": \"in\",\"id\": \"" + qs('id') + "\"\n}",
         success: function (data) {
             $("#searching").hide();
             $("#complete").show();
@@ -68,9 +68,5 @@
             $("#error").show();
         }
     });
-
-    $.ajax(settings);
-
-
 </script>
 </html>
