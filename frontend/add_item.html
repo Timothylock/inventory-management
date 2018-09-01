@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Add Item</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/popper.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/scripts.js"></script>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+    <ul class="navbar-nav">
+        <a class="navbar-brand" href="/">Inventory Management</a>
+    </ul>
+</nav>
+
+<div class="container-fluid" id="main-content">
+    <div class="row" id="AddScreen">
+        <div class="col-md-12">
+            <h3 class="text-center">Add Item</h3>
+            <p>Fill in the form below to add an item. Alternatively, click the scan barcode button to scan the barcode and attempt to fill in the information automatically</p>
+            <br>
+            <a class="btn btn-primary btn-block" href="add_item.html" role="button">Scan Barcode</a>
+            <br>
+            <form role="form" lpformnum="2">
+                <div class="form-group">
+                    <!-- id -->
+                    <label for="id">
+                        ID
+                    </label>
+                    <input type="text" class="form-control" id="id" required>
+                    <br>
+                    <!-- name -->
+                    <label for="name">
+                        Name
+                    </label>
+                    <input type="text" class="form-control" id="name" required>
+                    <br>
+                    <!-- category -->
+                    <label for="category">
+                        Category
+                    </label>
+                    <input type="text" class="form-control" id="category" required>
+                    <br>
+                    <!-- picture_url -->
+                    <label for="picture_url">
+                        Picture URL
+                    </label>
+                    <input type="text" class="form-control" id="picture_url">
+                    <br>
+                    <!-- details -->
+                    <label for="details">
+                        Details
+                    </label>
+                    <input type="text" class="form-control" id="details">
+                    <br>
+                    <!-- location -->
+                    <label for="location">
+                        Location
+                    </label>
+                    <input type="text" class="form-control" id="location" required>
+                    <br>
+                    <!-- quantity -->
+                    <label for="quantity">
+                        Quantity
+                    </label>
+                    <input type="number" class="form-control" id="quantity" value="1" required>
+                    <br>
+                    <button type="submit" class="btn btn-primary btn-block" id="addItem">
+                        Add
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" id="complete" style="display: none;">
+        <div class="col-md-12">
+            <h3 class="text-center">Complete!</h3>
+            <p class="text-center" id="completeBody">The item was successfully added.</p>
+            <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
+        </div>
+    </div>
+    <div class="row" id="error" style="display: none;">
+        <div class="col-md-12">
+            <h3 class="text-center">Error</h3>
+            <p class="text-center" id="errorBody"></p>
+            <button type="submit" class="btn btn-primary btn-block" id="back">
+                Back
+            </button>
+        </div>
+    </div>
+    <div class="row" id="results"></div>
+</div>
+</body>
+
+
+<!--TODO: DO this properly-->
+<script>
+    $("#back").click(function() {
+        $("#addItem").prop('disabled', false);
+        $("#error").hide();
+        $("#AddScreen").show();
+    });
+
+    $("#addItem").click(function() {
+        $("#addItem").prop('disabled', true);
+
+        $.ajax({ cache: false,
+            url: "api/item?overwrite=1",
+            method: "POST",
+            data: "{\"id\": \"" + $("#id").val() + "\",\"name\": \"" + $("#name").val() + "\",\"details\": \"" + $("#details").val() + "\",\"category\": \"" + $("#category").val() + "\",\"location\": \"" + $("#location").val() + "\",\"pictureURL\": \"" + $("#picture_url").val() + "\",\"quantity\": " + $("#quantity").val() + "}",
+            success: function (data) {
+                $("#AddScreen").hide();
+                $("#complete").show();
+            },
+            error: function (ajaxContext) {
+                var error = JSON.parse(ajaxContext.responseText);
+                $("#errorBody").text("Error code " + error.code + " - " + error.details);
+                $("#AddScreen").hide();
+                $("#error").show();
+            }
+        });
+    });
+</script>
+</html>

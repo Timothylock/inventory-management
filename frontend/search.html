@@ -14,7 +14,7 @@
   <body>
   <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
       <ul class="navbar-nav">
-          <a class="navbar-brand" href="#">Inventory Management</a>
+          <a class="navbar-brand" href="/">Inventory Management</a>
       </ul>
   </nav>
 
@@ -125,7 +125,7 @@
                 res+= "<p>Last used by: " + response[i].LastPerformedBy + "</p>";
                 res+= "<button type=\"button\" class=\"btn btn-block btn-primary\" onclick=\"confirmCheckin\('" + response[i].ID + "','" + response[i].Name + "','" + response[i].Location +"'\)\">Check In</button>";
                 res+= "<button type=\"button\" class=\"btn btn-block btn-primary\" onclick=\"confirmCheckout\('" + response[i].ID + "','" + response[i].Name + "'\)\">Check Out</button>";
-                res+= "<button type=\"button\" class=\"btn btn-block btn-warning\">Edit Item</button>";
+                res+= "<a class=\"btn btn-warning btn-block\" href=\"edit_item.html?id=" + response[i].ID + "\" role=\"button\">Edit Item</a>";
                 res+= "<button type=\"button\" class=\"btn btn-block btn-danger\" onclick=\"confirmDelete\('" + response[i].ID + "','" + response[i].Name + "'\)\">Delete Item</button>";
                 res+= "</div>";
                 res+= "</div>";

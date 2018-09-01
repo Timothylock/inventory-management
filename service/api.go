@@ -53,6 +53,11 @@ func (a *API) NotImplemented() http.Handler {
 	})
 }
 
+func getOptionalParam(r *http.Request, name string) string {
+	v, _ := getRequiredParam(r, name)
+	return v
+}
+
 func getRequiredParam(r *http.Request, name string) (string, error) {
 	params := r.URL.Query()[name]
 

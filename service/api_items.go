@@ -75,6 +75,9 @@ func (a *API) AddItem() http.Handler {
 			return
 		}
 
+		o := getOptionalParam(r, "overwrite")
+		overwrite := o == "1"
+
 		id := items.ItemDetail{
 			ID:              ad.ID,
 			Name:            ad.Name,
@@ -87,7 +90,7 @@ func (a *API) AddItem() http.Handler {
 			Status:          "checked in",
 		}
 
-		err = a.itemsService.AddItem(id)
+		err = a.itemsService.AddItem(id, overwrite)
 		if err != nil && err == items.ItemAlreadyExistsErr {
 			responses.SendError(w, responses.ItemAlreadyExists(err))
 			return

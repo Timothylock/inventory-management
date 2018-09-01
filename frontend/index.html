@@ -14,7 +14,7 @@
   <body>
   <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
       <ul class="navbar-nav">
-          <a class="navbar-brand" href="#">Inventory Management</a>
+          <a class="navbar-brand" href="/">Inventory Management</a>
       </ul>
   </nav>
 
@@ -26,9 +26,7 @@
 						Scan Existing Item
 					</h3>
 					<p class="text-center">Allows you to search for an item by scanning its barcode.</p>
-					<button type="button" class="btn btn-block btn-primary" id="itemOp">
-						Scan Item
-					</button>
+                    <a class="btn btn-primary btn-block" href="scan.html" role="button">Scan Item</a>
 				</div>
 			</div>
 			<div class="col-md-4 row-eq-height">
@@ -44,7 +42,7 @@
 							</label>
 							<input type="text" class="form-control" id="query">
 						</div>
-						<button type="button" class="btn btn-primary" id="search">
+						<button type="button" class="btn btn-primary btn-block" id="search">
 							Search
 						</button>
 					</form>
@@ -56,9 +54,7 @@
 						Advanced Operations
 					</h3>
 					<p class="text-center">Perform other actions</p>
-					<button type="button" class="btn btn-block btn-info">
-						New Item
-					</button>
+                    <a class="btn btn-primary btn-block" href="add_item.html" role="button">New Item</a>
 				</div>
 			</div>
 		</div>
@@ -67,9 +63,6 @@
     <script>
         $("#search").click(function() {
             window.location.href = "search.html?q=" + $("#query").val();
-        });
-        $("#itemOp").click(function() {
-            window.location.href = "scan.html";
         });
 	</script>
 

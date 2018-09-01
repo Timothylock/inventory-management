@@ -85,19 +85,21 @@ func (m *MySQL) MoveItem(ID, direction string) error {
 	return err
 }
 
-func (m *MySQL) AddItem(obj items.ItemDetail) error {
-	exist, err := m.doesIDExist(obj.ID)
-	if err != nil {
-		return err
-	}
-	if exist {
-		return items.ItemAlreadyExistsErr
+func (m *MySQL) AddItem(obj items.ItemDetail, overwrite bool) error {
+	if !overwrite {
+		exist, err := m.doesIDExist(obj.ID)
+		if err != nil {
+			return err
+		}
+		if exist {
+			return items.ItemAlreadyExistsErr
+		}
 	}
 
-	_, err = m.conn.Exec(
+	_, err := m.conn.Exec(
 		`INSERT INTO items (ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, LAST_PERFORMED_BY, QUANTITY, STATUS)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		obj.ID, obj.Name, obj.Category, obj.PictureURL, obj.Details, obj.Location, obj.LastPerformedBy, obj.Quantity, "checked in",
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ID = ?, NAME = ?, CATEGORY = ?, PICTURE_URL = ?, DETAILS = ?, LOCATION = ?, QUANTITY = ?`,
+		obj.ID, obj.Name, obj.Category, obj.PictureURL, obj.Details, obj.Location, obj.LastPerformedBy, obj.Quantity, "checked in", obj.ID, obj.Name, obj.Category, obj.PictureURL, obj.Details, obj.Location, obj.Quantity,
 	)
 	return err
 }
