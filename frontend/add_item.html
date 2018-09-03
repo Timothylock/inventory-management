@@ -19,12 +19,19 @@
 </nav>
 
 <div class="container-fluid" id="main-content">
+    <div class="row" id="searching" style="display: none;">
+        <div class="col-md-12">
+            <h3 class="text-center">Looking Up Item</h3>
+            <p class="text-center">The system is looking up the item in multiple online databases. Please wait.</p>
+            <div class="loader"></div>
+        </div>
+    </div>
     <div class="row" id="AddScreen">
         <div class="col-md-12">
             <h3 class="text-center">Add Item</h3>
             <p>Fill in the form below to add an item. Alternatively, click the scan barcode button to scan the barcode and attempt to fill in the information automatically</p>
             <br>
-            <a class="btn btn-primary btn-block" href="add_item.html" role="button">Scan Barcode</a>
+            <a class="btn btn-primary btn-block" href="" id="scanItem" role="button">Scan Barcode</a>
             <br>
             <form role="form" lpformnum="2">
                 <div class="form-group">
@@ -100,6 +107,47 @@
 
 <!--TODO: DO this properly-->
 <script>
+    var curURL = window.location;
+    var baseURL = curURL .protocol + "//" + curURL.host;
+    var androidScanURL = "http://zxing.appspot.com/scan?ret=" + baseURL + "/add_item.html?barcode={CODE}";
+
+    $("#scanItem").attr("href", androidScanURL);
+
+    function qs(key) {
+        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+        var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
+
+    if (qs("barcode") !== null) {
+        $("#searching").show();
+        $("#AddScreen").hide();
+
+        $.ajax({ cache: false,
+            url: "api/lookup?barcode=" + qs("barcode"),
+            method: "GET",
+            success: function (data) {
+                $("#searching").hide();
+
+                $("#id").val(qs("barcode"));
+                $("#category").val(data.category);
+                $("#name").val(data.name);
+                $("#picture_url").val(data.pictureURL);
+
+                $("#AddScreen").show();
+            },
+            error: function (ajaxContext) {
+                var error = JSON.parse(ajaxContext.responseText);
+                $("#searching").hide();
+
+                $("#errorBody").text("Error code " + error.code + " - " + error.details);
+                $("#error").show();
+                $("#AddScreen").show();
+            }
+        });
+    }
+
+
     $("#back").click(function() {
         $("#addItem").prop('disabled', false);
         $("#error").hide();

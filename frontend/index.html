@@ -26,7 +26,8 @@
 						Scan Existing Item
 					</h3>
 					<p class="text-center">Allows you to search for an item by scanning its barcode.</p>
-                    <a class="btn btn-primary btn-block" href="scan.html" role="button">Scan Item</a>
+					<p class="text-center">Currently only supports Android</p>
+                    <a class="btn btn-primary btn-block" role="button" id="scanItem">Scan Item</a>
 				</div>
 			</div>
 			<div class="col-md-4 row-eq-height">
@@ -64,6 +65,12 @@
         $("#search").click(function() {
             window.location.href = "search.html?q=" + $("#query").val();
         });
+
+        var curURL = window.location;
+        var baseURL = curURL .protocol + "//" + curURL.host;
+        var androidScanURL = "http://zxing.appspot.com/scan?ret=" + baseURL + "/search.html?q={CODE}";
+
+        $("#scanItem").attr("href", androidScanURL);
 	</script>
 
     <script src="js/jquery.min.js"></script>
