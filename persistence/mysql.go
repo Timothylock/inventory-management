@@ -82,6 +82,11 @@ func (m *MySQL) MoveItem(ID, direction string) error {
 		"UPDATE items SET STATUS = ? WHERE ID = ?",
 		status, ID,
 	)
+
+	if err == nil {
+		m.addLog(0, ID, status, "")
+	}
+
 	return err
 }
 
@@ -101,6 +106,11 @@ func (m *MySQL) AddItem(obj items.ItemDetail, overwrite bool) error {
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ID = ?, NAME = ?, CATEGORY = ?, PICTURE_URL = ?, DETAILS = ?, LOCATION = ?, QUANTITY = ?`,
 		obj.ID, obj.Name, obj.Category, obj.PictureURL, obj.Details, obj.Location, obj.LastPerformedBy, obj.Quantity, "checked in", obj.ID, obj.Name, obj.Category, obj.PictureURL, obj.Details, obj.Location, obj.Quantity,
 	)
+
+	if err == nil {
+		m.addLog(0, obj.ID, "add", fmt.Sprintf("overwrite/skip exist check flag was recieved as %t", overwrite))
+	}
+
 	return err
 }
 
@@ -121,5 +131,13 @@ func (m *MySQL) DeleteItem(ID string) error {
 		return items.ItemNotFoundErr
 	}
 
+	m.addLog(0, ID, "delete", "")
+
+	return err
+}
+
+func (m *MySQL) addLog(uID int, objID, action, details string) error {
+	_, err := m.conn.Exec(`INSERT INTO logs (USERID, OBJECTID, ACTION, DETAILS, DATE) VALUES
+	(?, ?, ?, ?, NOW())`, uID, objID, action, details)
 	return err
 }
