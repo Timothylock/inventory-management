@@ -11,7 +11,9 @@ RUN set -x && \
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o app .
 
 # Stage 2 (to create a downsized "container executable", ~7MB)
-FROM scratch
+FROM alpine:3.7
+RUN apk --no-cache add ca-certificates
+
 WORKDIR /root/
 COPY ./frontend/ /frontend/
 COPY --from=builder /go/src/github.com/Timothylock/inventory-management/app .
