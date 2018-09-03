@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-go install github.com/Timothylock/inventory-management
+docker build -t "timothylock/inventory-management:latest" .
+docker push timothylock/inventory-management:latest

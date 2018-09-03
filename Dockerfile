@@ -1,6 +1,20 @@
-FROM golang:alpine
+# Stage 1 (to create a "build" image, ~850MB)
+FROM golang:1.10.1 AS builder
+RUN go version
 
-COPY /subscriptions /subscriptions
-COPY /service/products/*.json /service/products/
+COPY . /go/src/github.com/Timothylock/inventory-management/
+WORKDIR /go/src/github.com/Timothylock/inventory-management/
+RUN set -x && \
+    go get github.com/golang/dep/cmd/dep && \
+    dep ensure -v
 
-CMD ["/subscriptions"]
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o app .
+
+# Stage 2 (to create a downsized "container executable", ~7MB)
+FROM scratch
+WORKDIR /root/
+COPY ./frontend/ /frontend/
+COPY --from=builder /go/src/github.com/Timothylock/inventory-management/app .
+
+EXPOSE 9090
+ENTRYPOINT ["./app"]

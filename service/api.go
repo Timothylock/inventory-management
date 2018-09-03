@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Timothylock/inventory-management/config"
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/middleware"
 	"github.com/Timothylock/inventory-management/responses"
@@ -28,7 +29,7 @@ func NewAPI(is items.Service, us upc.Service) API {
 	}
 }
 
-func NewRouter(api *API) http.Handler {
+func NewRouter(api *API, cfg config.Config) http.Handler {
 	router := httprouter.New()
 
 	// Items
@@ -47,7 +48,7 @@ func NewRouter(api *API) http.Handler {
 
 	// Frontend
 	mux := http.NewServeMux()
-	mux.Handle("/", http.FileServer(http.Dir("/Users/timothylock/go/src/github.com/Timothylock/inventory-management/frontend")))
+	mux.Handle("/", http.FileServer(http.Dir(cfg.FrontendPath)))
 	mux.Handle("/api/", router)
 
 	return mux

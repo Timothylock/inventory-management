@@ -1,0 +1,38 @@
+version: '2'
+
+services:
+  inventory-management:
+     depends_on:
+       - mysql
+     links:
+       - mysql:mysql
+     image: inventory:latest
+     ports:
+       - "8080:9090"
+     restart: always
+     environment:
+       DB_URL: mysql:3306
+       DB_USER: root
+       DB_PASS: password
+       DB_NAME: inventory
+       UPC_URL: localhost
+       UPC_TOKEN: sometoken
+       FRONTEND_PATH: /frontend
+     network_mode: "bridge"
+
+  mysql:
+     image: mysql:5.7
+     ports:
+       - "9306:3306"
+     volumes:
+       - mysqldata:/var/lib/mysql
+     restart: always
+     environment:
+       WORDPRESS_DB_USER: root
+       MYSQL_ROOT_PASSWORD: password
+       MYSQL_USER: user
+       MYSQL_PASSWORD: password
+     network_mode: "bridge"
+
+volumes:
+    mysqldata:

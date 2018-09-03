@@ -6,10 +6,8 @@ inventory Management
 
 An inventory management system made specifically for use of myself and used by other clubs. This is written in Go.
 
-# Installing
-TODO: Docker image
-
-Required Go >= 1.8
+## Running via docker-compose
+You can run a new instance of the inventory management system with `docker-compose up`
 
 ## Environment Variables
 Several environment variables must be set in order for this system to boot. They should all be self explanatory.

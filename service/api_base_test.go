@@ -23,7 +23,7 @@ func setupServer(ip items.Persister, t *testing.T) *httptest.Server {
 
 	serv := NewAPI(is, us)
 
-	return httptest.NewServer(NewRouter(&serv))
+	return httptest.NewServer(NewRouter(&serv, cfg))
 }
 
 func sendPost(url string, body interface{}) (*http.Response, error) {
