@@ -15,7 +15,7 @@ import (
 const (
 	updateItem    = `UPDATE items.+`
 	doesItemExist = `SELECT count\(1\) FROM items.+`
-	deleteItem    = `DELETE FROM items.+`
+	deleteItem    = `UPDATE items SET DELETED=1.+`
 	addItem       = `INSERT INTO items`
 	searchItems   = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
 )
@@ -258,7 +258,7 @@ func TestAddItemAlreadyExists(t *testing.T) {
 		WithArgs("1234").
 		WillReturnRows(rows)
 
-	err := db.AddItem(items.ItemDetail{ID: "1234"})
+	err := db.AddItem(items.ItemDetail{ID: "1234"}, false)
 	assert.Error(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -274,7 +274,7 @@ func TestAddItemAlreadyExistsError(t *testing.T) {
 		WithArgs("1234").
 		WillReturnError(errors.New("some error"))
 
-	err := db.AddItem(items.ItemDetail{ID: "1234"})
+	err := db.AddItem(items.ItemDetail{ID: "1234"}, false)
 	assert.Error(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -302,10 +302,35 @@ func TestAddItemSuccess(t *testing.T) {
 		WithArgs("ID").
 		WillReturnRows(rows)
 	mock.ExpectExec(addItem).
-		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", 1, "checked in").
+		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", 1, "checked in", "ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", 1).
 		WillReturnResult(sqlmock.NewResult(123, 1))
 
-	err := db.AddItem(item)
+	err := db.AddItem(item, false)
+	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAddItemOverwriteSuccess(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	item := items.ItemDetail{
+		ID:              "ID",
+		Name:            "NAME",
+		Category:        "CATEGORY",
+		PictureURL:      "PICTURE_URL",
+		Details:         "DETAILS",
+		Location:        "LOCATION",
+		LastPerformedBy: "USERNAME",
+		Quantity:        1,
+		Status:          "checked in",
+	}
+
+	mock.ExpectExec(addItem).
+		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", 1, "checked in", "ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", 1).
+		WillReturnResult(sqlmock.NewResult(123, 1))
+
+	err := db.AddItem(item, true)
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

@@ -336,7 +336,7 @@ func TestAddItem(t *testing.T) {
 					Quantity:        1,
 					LastPerformedBy: "0",
 					Status:          "checked in",
-				}).Return(nil)
+				}, false).Return(nil)
 			},
 			sendBody: AddBody{
 				ID:         "1",
@@ -376,7 +376,7 @@ func TestAddItem(t *testing.T) {
 					Quantity:        1,
 					LastPerformedBy: "0",
 					Status:          "checked in",
-				}).Return(items.ItemAlreadyExistsErr)
+				}, false).Return(items.ItemAlreadyExistsErr)
 			},
 			sendBody: AddBody{
 				ID:         "1",
@@ -402,7 +402,7 @@ func TestAddItem(t *testing.T) {
 					Quantity:        1,
 					LastPerformedBy: "0",
 					Status:          "checked in",
-				}).Return(errors.New("sorry"))
+				}, false).Return(errors.New("sorry"))
 			},
 			sendBody: AddBody{
 				ID:         "1",

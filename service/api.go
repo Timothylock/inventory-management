@@ -9,6 +9,7 @@ import (
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/middleware"
 	"github.com/Timothylock/inventory-management/responses"
+	"github.com/Timothylock/inventory-management/upc"
 
 	"io/ioutil"
 
@@ -17,11 +18,13 @@ import (
 
 type API struct {
 	itemsService items.Service
+	upcService   upc.Service
 }
 
-func NewAPI(is items.Service) API {
+func NewAPI(is items.Service, us upc.Service) API {
 	return API{
 		itemsService: is,
+		upcService:   us,
 	}
 }
 
@@ -33,6 +36,9 @@ func NewRouter(api *API) http.Handler {
 	router.Handler("POST", "/api/item/move", middleware.UserRequired(api.MoveItem()))
 	router.Handler("POST", "/api/item", middleware.UserRequired(api.AddItem()))
 	router.Handler("DELETE", "/api/item", middleware.UserRequired(api.DeleteItem()))
+
+	// UPC
+	router.Handler("GET", "/api/lookup", middleware.UserRequired(api.LookupBarcode()))
 
 	// User
 	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.NotImplemented()))
@@ -51,6 +57,11 @@ func (a *API) NotImplemented() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Not yet implemented\n")
 	})
+}
+
+func getOptionalParam(r *http.Request, name string) string {
+	v, _ := getRequiredParam(r, name)
+	return v
 }
 
 func getRequiredParam(r *http.Request, name string) (string, error) {

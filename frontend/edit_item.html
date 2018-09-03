@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Edit Item</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/popper.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/scripts.js"></script>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+    <ul class="navbar-nav">
+        <a class="navbar-brand" href="/">Inventory Management</a>
+    </ul>
+</nav>
+
+<div class="container-fluid" id="main-content">
+    <div class="row" id="searching">
+        <div class="col-md-12">
+            <h3 class="text-center">Fetching Item</h3>
+            <p class="text-center">The system is fetching the item for editing. Please wait.</p>
+            <div class="loader"></div>
+        </div>
+    </div>
+    <div class="row" id="editScreen" style="display: none;">
+        <div class="col-md-12">
+            <h3 class="text-center">Edit Item</h3>
+            <form role="form" lpformnum="2">
+                <div class="form-group">
+                    <!-- id -->
+                    <label for="id">
+                        ID
+                    </label>
+                    <input type="text" class="form-control" id="id" disabled>
+                    <br>
+                    <!-- name -->
+                    <label for="name">
+                        Name
+                    </label>
+                    <input type="text" class="form-control" id="name">
+                    <br>
+                    <!-- category -->
+                    <label for="category">
+                        Category
+                    </label>
+                    <input type="text" class="form-control" id="category">
+                    <br>
+                    <!-- picture_url -->
+                    <label for="picture_url">
+                        Picture URL
+                    </label>
+                    <input type="text" class="form-control" id="picture_url">
+                    <br>
+                    <!-- details -->
+                    <label for="details">
+                        Details
+                    </label>
+                    <input type="text" class="form-control" id="details">
+                    <br>
+                    <!-- location -->
+                    <label for="location">
+                        Location
+                    </label>
+                    <input type="text" class="form-control" id="location">
+                    <br>
+                    <!-- quantity -->
+                    <label for="quantity">
+                        Quantity
+                    </label>
+                    <input type="text" class="form-control" id="quantity">
+                    <br>
+                </div>
+                <button type="button" class="btn btn-primary btn-block" id="update">
+                    Update
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="row" id="complete" style="display: none;">
+        <div class="col-md-12">
+            <h3 class="text-center">Complete!</h3>
+            <p class="text-center" id="completeBody">The item was successfully edited.</p>
+            <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
+        </div>
+    </div>
+    <div class="row" id="error" style="display: none;">
+        <div class="col-md-12">
+            <h3 class="text-center">Error</h3>
+            <p class="text-center" id="errorBody"></p>
+            <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
+        </div>
+    </div>
+    <div class="row" id="results"></div>
+</div>
+</body>
+
+
+<!--TODO: DO this properly-->
+<script>
+    function qs(key) {
+        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+        var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
+
+    $("#update").click(function() {
+        $("#update").prop('disabled', true);
+
+        $.ajax({ cache: false,
+            url: "api/item?overwrite=1",
+            method: "POST",
+            data: "{\"id\": \"" + qs("id") + "\",\"name\": \"" + $("#name").val() + "\",\"details\": \"" + $("#details").val() + "\",\"category\": \"" + $("#category").val() + "\",\"location\": \"" + $("#location").val() + "\",\"pictureURL\": \"" + $("#picture_url").val() + "\",\"quantity\": " + $("#quantity").val() + "}",
+            success: function (data) {
+                $("#editScreen").hide();
+                $("#complete").show();
+            },
+            error: function (ajaxContext) {
+                var error = JSON.parse(ajaxContext.responseText);
+                $("#errorBody").text("Error code " + error.code + " - " + error.details);
+                $("#editScreen").hide();
+                $("#error").show();
+            }
+        });
+    });
+
+    $.ajax({ cache: false,
+        url: "/api/item/info?q=" + qs("id"),
+        method: "GET",
+        success: function (response) {
+            $("#searching").hide();
+
+            if (response.length === 0) {
+                $("#errorBody").text("Item not found");
+                $("#error").show();
+                return;
+            }
+
+            $("#id").val(response[0].ID);
+            $("#name").val(response[0].Name);
+            $("#category").val(response[0].Category);
+            $("#picture_url").val(response[0].PictureURL);
+            $("#details").val(response[0].Details);
+            $("#location").val(response[0].Location);
+            $("#quantity").val(response[0].Quantity);
+
+            $("#editScreen").show();
+        },
+        error: function (ajaxContext) {
+            var error = JSON.parse(ajaxContext.responseText);
+            $("#errorBody").text("Error code " + error.code + " - " + error.details);
+            $("#searching").hide();
+            $("#error").show();
+        }
+    });
+</script>
+</html>

@@ -1,15 +1,16 @@
 package main
 
 import (
-	"net/http"
-	"log"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 
-	"github.com/Timothylock/inventory-management/service"
-	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/config"
+	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/persistence"
+	"github.com/Timothylock/inventory-management/service"
+	"github.com/Timothylock/inventory-management/upc"
 )
 
 func main() {
@@ -25,9 +26,9 @@ func main() {
 		os.Exit(1)
 	}
 
-
 	is := items.NewService(persister)
-	api := service.NewAPI(is)
+	us := upc.NewService(*cfg)
+	api := service.NewAPI(is, us)
 	router := service.NewRouter(&api)
 
 	log.Fatal(http.ListenAndServe(":9090", router))

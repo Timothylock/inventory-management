@@ -6,7 +6,7 @@ type Persister interface {
 	MoveItem(ID, direction string) error
 	DeleteItem(ID string) error
 	SearchItems(search string) (ItemDetailList, error)
-	AddItem(obj ItemDetail) error
+	AddItem(obj ItemDetail, overwrite bool) error
 }
 
 var ItemNotFoundErr = errors.New("item not found")
@@ -43,8 +43,8 @@ func (s *Service) DeleteItem(id string) error {
 	return s.persister.DeleteItem(id)
 }
 
-func (s *Service) AddItem(item ItemDetail) error {
-	return s.persister.AddItem(item)
+func (s *Service) AddItem(item ItemDetail, overwrite bool) error {
+	return s.persister.AddItem(item, overwrite)
 }
 
 func (s *Service) MoveItem(id, direction string) error {

@@ -8,15 +8,20 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Timothylock/inventory-management/config"
 	"github.com/Timothylock/inventory-management/items"
+	"github.com/Timothylock/inventory-management/upc"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
 func setupServer(ip items.Persister, t *testing.T) *httptest.Server {
-	is := items.NewService(ip)
+	cfg := config.Config{}
 
-	serv := NewAPI(is)
+	is := items.NewService(ip)
+	us := upc.NewService(cfg)
+
+	serv := NewAPI(is, us)
 
 	return httptest.NewServer(NewRouter(&serv))
 }
