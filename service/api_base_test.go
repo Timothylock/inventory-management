@@ -26,6 +26,15 @@ func setupServer(ip items.Persister, t *testing.T) *httptest.Server {
 	return httptest.NewServer(NewRouter(&serv, cfg))
 }
 
+func setupServerWithConfig(ip items.Persister, cfg config.Config, t *testing.T) *httptest.Server {
+	is := items.NewService(ip)
+	us := upc.NewService(cfg)
+
+	serv := NewAPI(is, us)
+
+	return httptest.NewServer(NewRouter(&serv, cfg))
+}
+
 func sendPost(url string, body interface{}) (*http.Response, error) {
 	bs, err := json.Marshal(body)
 	if err != nil {
