@@ -13,11 +13,12 @@ import (
 )
 
 const (
-	updateItem    = `UPDATE items.+`
-	doesItemExist = `SELECT count\(1\) FROM items.+`
-	deleteItem    = `UPDATE items SET DELETED=1.+`
-	addItem       = `INSERT INTO items`
-	searchItems   = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
+	updateItem       = `UPDATE items.+`
+	doesItemExist    = `SELECT count\(1\) FROM items.+`
+	deleteItem       = `UPDATE items SET DELETED=1.+`
+	addItem          = `INSERT INTO items`
+	addItemOverwrite = `UPDATE items.+`
+	searchItems      = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
 )
 
 func newTestDB(t *testing.T) (*MySQL, sqlmock.Sqlmock) {
@@ -302,7 +303,7 @@ func TestAddItemSuccess(t *testing.T) {
 		WithArgs("ID").
 		WillReturnRows(rows)
 	mock.ExpectExec(addItem).
-		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", 1, "checked in", "ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", 1).
+		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", 1, "checked in").
 		WillReturnResult(sqlmock.NewResult(123, 1))
 
 	err := db.AddItem(item, false)
@@ -313,6 +314,9 @@ func TestAddItemSuccess(t *testing.T) {
 func TestAddItemOverwriteSuccess(t *testing.T) {
 	db, mock := newTestDB(t)
 	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"COUNT(1)"})
+	rows.AddRow(1)
 
 	item := items.ItemDetail{
 		ID:              "ID",
@@ -326,11 +330,42 @@ func TestAddItemOverwriteSuccess(t *testing.T) {
 		Status:          "checked in",
 	}
 
-	mock.ExpectExec(addItem).
-		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", 1, "checked in", "ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", 1).
+	mock.ExpectQuery(doesItemExist).
+		WithArgs("ID").
+		WillReturnRows(rows)
+	mock.ExpectExec(addItemOverwrite).
+		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", 1, "ID").
 		WillReturnResult(sqlmock.NewResult(123, 1))
 
 	err := db.AddItem(item, true)
 	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAddItemOverwriteFailure(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"COUNT(1)"})
+	rows.AddRow(0)
+
+	item := items.ItemDetail{
+		ID:              "ID",
+		Name:            "NAME",
+		Category:        "CATEGORY",
+		PictureURL:      "PICTURE_URL",
+		Details:         "DETAILS",
+		Location:        "LOCATION",
+		LastPerformedBy: "USERNAME",
+		Quantity:        1,
+		Status:          "checked in",
+	}
+
+	mock.ExpectQuery(doesItemExist).
+		WithArgs("ID").
+		WillReturnRows(rows)
+
+	err := db.AddItem(item, true)
+	assert.Error(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

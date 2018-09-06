@@ -38,6 +38,7 @@ func (m *MySQL) doesIDExist(ID string) (bool, error) {
 		"SELECT count(1) FROM items WHERE ID = ?",
 		ID,
 	)
+
 	if err != nil {
 		return false, err
 	}
@@ -91,21 +92,27 @@ func (m *MySQL) MoveItem(ID, direction string) error {
 }
 
 func (m *MySQL) AddItem(obj items.ItemDetail, overwrite bool) error {
-	if !overwrite {
-		exist, err := m.doesIDExist(obj.ID)
-		if err != nil {
-			return err
-		}
-		if exist {
-			return items.ItemAlreadyExistsErr
-		}
+	exist, err := m.doesIDExist(obj.ID)
+	if err != nil {
+		return err
+	}
+	if exist && !overwrite {
+		return items.ItemAlreadyExistsErr
+	}
+	if !exist && overwrite {
+		return items.ItemNotFoundErr
 	}
 
-	_, err := m.conn.Exec(
-		`INSERT INTO items (ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, LAST_PERFORMED_BY, QUANTITY, STATUS)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ID = ?, NAME = ?, CATEGORY = ?, PICTURE_URL = ?, DETAILS = ?, LOCATION = ?, QUANTITY = ?`,
-		obj.ID, obj.Name, obj.Category, obj.PictureURL, obj.Details, obj.Location, obj.LastPerformedBy, obj.Quantity, "checked in", obj.ID, obj.Name, obj.Category, obj.PictureURL, obj.Details, obj.Location, obj.Quantity,
-	)
+	if !overwrite {
+		_, err = m.conn.Exec(
+			`INSERT INTO items (ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, LAST_PERFORMED_BY, QUANTITY, STATUS)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) `,
+			obj.ID, obj.Name, obj.Category, obj.PictureURL, obj.Details, obj.Location, obj.LastPerformedBy, obj.Quantity, "checked in")
+	} else if overwrite {
+		_, err = m.conn.Exec(
+			`UPDATE items SET ID = ?, NAME = ?, CATEGORY = ?, PICTURE_URL = ?, DETAILS = ?, LOCATION = ?, LAST_PERFORMED_BY = ?, QUANTITY = ? WHERE ID = ?`,
+			obj.ID, obj.Name, obj.Category, obj.PictureURL, obj.Details, obj.Location, obj.LastPerformedBy, obj.Quantity, obj.ID)
+	}
 
 	if err == nil {
 		m.addLog(0, obj.ID, "add", fmt.Sprintf("overwrite/skip exist check flag was recieved as %t", overwrite))

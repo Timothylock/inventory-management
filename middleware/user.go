@@ -7,12 +7,12 @@ import (
 	"github.com/Timothylock/inventory-management/responses"
 )
 
-func UserRequired(h http.Handler) http.Handler  {
+func UserRequired(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		allow := true
 
 		if !allow {
-			responses.SendError(w, responses.NotLoggedIn(errors.New("must be logged in to access this endpoint")))
+			responses.SendError(w, responses.Unauthorized(errors.New("user is not authorized to make this request")))
 			return
 		}
 

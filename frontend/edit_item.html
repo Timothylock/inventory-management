@@ -151,7 +151,7 @@
         },
         error: function (ajaxContext) {
             var error = JSON.parse(ajaxContext.responseText);
-            $("#errorBody").text("Error code " + error.code + " - " + error.details);
+            $("#errorBody").text(friendlyError(error.code, error.details));
             $("#searching").hide();
             $("#error").show();
         }

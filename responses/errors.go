@@ -40,7 +40,7 @@ func MissingParamError(param string) httpError {
 	}
 }
 
-func NotLoggedIn(err error) httpError {
+func Unauthorized(err error) httpError {
 	return httpError{
 		StatusCode: http.StatusUnauthorized,
 		ErrorCode:  1001,

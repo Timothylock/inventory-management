@@ -22,3 +22,11 @@ CREATE TABLE `users` (
   `PASSWORD_HASHED` text NOT NULL,
   PRIMARY KEY (`ID`)
 );
+
+CREATE TABLE `logs` (
+  `USERID` int(11) NOT NULL,
+  `OBJECTID` text NOT NULL,
+  `ACTION` text NOT NULL,
+  `DETAILS` blob,
+  `DATE` datetime NOT NULL
+);
