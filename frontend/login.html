@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Check In Item</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/popper.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/scripts.js"></script>
+    <link rel="stylesheet" href="./css/styles.css">
+
+    <meta name="theme-color" content="#0174d8"/>
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+    <ul class="navbar-nav">
+        <a class="navbar-brand text-white" href="/">Inventory Management</a>
+    </ul>
+</nav>
+
+<div class="container-fluid" id="main-content">
+    <div class="row">
+        <div class="col-md-4 col-centered row-eq-height" id="loginwindow">
+            <div class="col-md-12">
+                <h3 class="text-center">Log In</h3>
+                <p class="text-center">This is a private system that requires authentication</p>
+                <!-- username -->
+                <label for="username">
+                    Username
+                </label>
+                <input type="text" class="form-control" id="username" required>
+                <br>
+                <!-- password -->
+                <label for="password">
+                    Password
+                </label>
+                <input type="password" class="form-control" id="password" required>
+                <br>
+                <button type="button" class="btn btn-primary btn-block" id="update">
+                    Log In
+                </button>
+                <a class="text-center" href="forgot_password.html">Forgot Password</a>
+            </div>
+        </div>
+        <div class="col-md-4 col-centered row-eq-height" id="error" style="display: none;">
+            <div class="col-md-12">
+                <h3 class="text-center">Error</h3>
+                <p class="text-center" id="errorBody"></p>
+                <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--TODO: DO this properly-->
+<script>
+    function qs(key) {
+        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+        var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
+
+    // $.ajax({ cache: false,
+    //     url: "api/item/move",
+    //     method: "POST",
+    //     data: "{\"direction\": \"in\",\"id\": \"" + qs('id') + "\"\n}",
+    //     success: function (data) {
+    //         $("#loginwindow").hide();
+    //         $("#complete").show();
+    //     },
+    //     error: function (ajaxContext) {
+    //         var error = JSON.parse(ajaxContext.responseText);
+    //         $("#errorBody").text(friendlyError(error.code, error.details));
+    //         $("#loginwindow").hide();
+    //         $("#error").show();
+    //     }
+    // });
+</script>
+</html>

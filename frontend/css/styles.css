@@ -20,6 +20,11 @@ body {
     background-color: #e1e2e1;
 }
 
+.col-centered{
+    float: none;
+    margin: 0 auto;
+}
+
 .loader {
     height: 4px;
     width: 100%;

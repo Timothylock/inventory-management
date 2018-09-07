@@ -10,11 +10,14 @@
       <script src="js/bootstrap.min.js"></script>
       <script src="js/scripts.js"></script>
       <link rel="stylesheet" href="./css/styles.css">
+
+      <meta name="theme-color" content="#0174d8"/>
+      <meta name="mobile-web-app-capable" content="yes">
   </head>
   <body>
   <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
       <ul class="navbar-nav">
-          <a class="navbar-brand" href="/">Inventory Management</a>
+          <a class="navbar-brand text-white" href="/">Inventory Management</a>
       </ul>
   </nav>
 
@@ -27,8 +30,8 @@
                     </h3>
                     <p class="text-center">Allows you to perform commonly used items quickly.</p>
                     <p class="text-center">This will open up the barcode scanner. Currently only supports Android</p>
-                    <a class="btn btn-primary btn-block" role="button" id="checkIn">Check In (Coming Soon!)</a>
-                    <a class="btn btn-primary btn-block" role="button" id="checkOut">Check In (Coming Soon!)</a>
+                    <a class="btn btn-primary btn-block text-white" role="button" id="checkIn">Check In</a>
+                    <a class="btn btn-primary btn-block text-white" role="button" id="checkOut">Check Out</a>
                 </div>
             </div>
             <div class="col-md-4 row-eq-height">
@@ -38,7 +41,7 @@
 					</h3>
 					<p class="text-center">Allows you to search for an item by scanning its barcode.</p>
 					<p class="text-center">Currently only supports Android</p>
-                    <a class="btn btn-primary btn-block" role="button" id="scanItem">Scan Item</a>
+                    <a class="btn btn-primary btn-block text-white" role="button" id="scanItem">Scan Item</a>
 				</div>
 			</div>
 			<div class="col-md-4 row-eq-height">
@@ -80,8 +83,12 @@
         var curURL = window.location;
         var baseURL = curURL .protocol + "//" + curURL.host;
         var androidScanURL = "http://zxing.appspot.com/scan?ret=" + baseURL + "/search.html?q={CODE}";
+        var checkinURL = "http://zxing.appspot.com/scan?ret=" + baseURL + "/checkin.html?id={CODE}";
+        var checkoutURL = "http://zxing.appspot.com/scan?ret=" + baseURL + "/checkout.html?id={CODE}";
 
         $("#scanItem").attr("href", androidScanURL);
+        $("#checkIn").attr("href", checkinURL);
+        $("#checkOut").attr("href", checkoutURL);
 	</script>
 
     <script src="js/jquery.min.js"></script>
