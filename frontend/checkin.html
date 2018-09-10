@@ -65,6 +65,12 @@
         },
         error: function (ajaxContext) {
             var error = JSON.parse(ajaxContext.responseText);
+
+            // Redirect to login screen
+            if (error.code === 1001) {
+                window.location.href = "login.html";
+            }
+
             $("#errorBody").text(friendlyError(error.code, error.details));
             $("#searching").hide();
             $("#error").show();

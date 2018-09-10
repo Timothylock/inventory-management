@@ -96,7 +96,7 @@ func TestMoveItem(t *testing.T) {
 			ip := items.NewMockPersister(mc)
 			tc.setMock(ip)
 
-			server := setupServer(ip, t)
+			server := setupServerAuthenticated(ip, t)
 			defer server.Close()
 
 			resp, err := sendPost(server.URL+"/api/item/move", tc.body)
@@ -117,7 +117,7 @@ func TestMoveItemBadBody(t *testing.T) {
 	defer mc.Finish()
 
 	ip := items.NewMockPersister(mc)
-	server := setupServer(ip, t)
+	server := setupServerAuthenticated(ip, t)
 	defer server.Close()
 
 	resp, err := sendPost(server.URL+"/api/item/move", `{"direction": "in", "id": 123}`)
@@ -182,7 +182,7 @@ func TestDeleteItem(t *testing.T) {
 			ip := items.NewMockPersister(mc)
 			tc.setMock(ip)
 
-			server := setupServer(ip, t)
+			server := setupServerAuthenticated(ip, t)
 			defer server.Close()
 
 			resp, err := sendDelete(server.URL + "/api/item?id=" + tc.id)
@@ -285,7 +285,7 @@ func TestSearchItems(t *testing.T) {
 			ip := items.NewMockPersister(mc)
 			tc.setMock(ip)
 
-			server := setupServer(ip, t)
+			server := setupServerAuthenticated(ip, t)
 			defer server.Close()
 
 			resp, err := sendGet(server.URL + "/api/item/info?q=foo")
@@ -306,7 +306,7 @@ func TestSearchItemsMissingQuery(t *testing.T) {
 	defer mc.Finish()
 
 	ip := items.NewMockPersister(mc)
-	server := setupServer(ip, t)
+	server := setupServerAuthenticated(ip, t)
 	defer server.Close()
 
 	resp, err := sendGet(server.URL + "/api/item/info")
@@ -425,7 +425,7 @@ func TestAddItem(t *testing.T) {
 			ip := items.NewMockPersister(mc)
 			tc.setMock(ip)
 
-			server := setupServer(ip, t)
+			server := setupServerAuthenticated(ip, t)
 			defer server.Close()
 
 			resp, err := sendPost(server.URL+"/api/item", tc.sendBody)
@@ -446,7 +446,7 @@ func TestAddItemBadBody(t *testing.T) {
 	defer mc.Finish()
 
 	ip := items.NewMockPersister(mc)
-	server := setupServer(ip, t)
+	server := setupServerAuthenticated(ip, t)
 	defer server.Close()
 
 	resp, err := sendPost(server.URL+"/api/item", `{"id": 123}`)

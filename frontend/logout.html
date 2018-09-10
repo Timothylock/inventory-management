@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Log Out</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/popper.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/scripts.js"></script>
+    <link rel="stylesheet" href="./css/styles.css">
+
+    <meta name="theme-color" content="#0174d8"/>
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+    <ul class="navbar-nav">
+        <a class="navbar-brand text-white" href="/">Inventory Management</a>
+    </ul>
+</nav>
+
+<div class="container-fluid" id="main-content">
+    <div class="row">
+        <div class="col-md-4 col-centered row-eq-height" id="loginwindow">
+            <div class="col-md-12">
+                <h3 class="text-center">Log Out</h3>
+                <p class="text-center">You have successfully logged out</p>
+                <a class="btn btn-primary btn-block" href="login.html" role="button">Log In</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--TODO: DO this properly-->
+<script>
+    document.cookie.split(";").forEach(function(c) { document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); });
+</script>
+</html>

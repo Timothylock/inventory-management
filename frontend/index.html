@@ -70,7 +70,8 @@
 					</h3>
 					<p class="text-center">Perform other actions</p>
                     <a class="btn btn-primary btn-block" href="add_item.html" role="button">New Item</a>
-				</div>
+                    <a class="btn btn-primary btn-block" href="logout.html" role="button">Log Out</a>
+                </div>
 			</div>
 		</div>
 	</div>
@@ -89,6 +90,20 @@
         $("#scanItem").attr("href", androidScanURL);
         $("#checkIn").attr("href", checkinURL);
         $("#checkOut").attr("href", checkoutURL);
+
+        // Make sure user is logged in
+        $.ajax({ cache: false,
+            url: "/api/user/logincheck",
+            method: "GET",
+            error: function (ajaxContext) {
+                var error = JSON.parse(ajaxContext.responseText);
+
+                // Redirect to login screen
+                if (error.code === 1001) {
+                    window.location.href = "login.html";
+                }
+            }
+        });
 	</script>
 
     <script src="js/jquery.min.js"></script>

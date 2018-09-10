@@ -19,7 +19,7 @@ func TestLookupBarcodeMissingQuery(t *testing.T) {
 	defer mc.Finish()
 
 	ip := items.NewMockPersister(mc)
-	server := setupServer(ip, t)
+	server := setupServerAuthenticated(ip, t)
 	defer server.Close()
 
 	resp, err := sendGet(server.URL + "/api/lookup")
@@ -32,7 +32,7 @@ func TestLookupBarcodeServerError(t *testing.T) {
 	defer mc.Finish()
 
 	ip := items.NewMockPersister(mc)
-	server := setupServer(ip, t)
+	server := setupServerAuthenticated(ip, t)
 	defer server.Close()
 
 	resp, err := sendGet(server.URL + "/api/lookup?barcode=123")
@@ -53,7 +53,7 @@ func TestLookupBarcodeSuccess(t *testing.T) {
 		UpcUrl: ts.URL,
 	}
 	ip := items.NewMockPersister(mc)
-	server := setupServerWithConfig(ip, cfg, t)
+	server := setupServerWithConfigAuthenticated(ip, cfg, t)
 	defer server.Close()
 
 	expected := upc.ItemDetail{

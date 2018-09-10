@@ -11,26 +11,51 @@ import (
 	"github.com/Timothylock/inventory-management/config"
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/upc"
+	"github.com/Timothylock/inventory-management/users"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
-func setupServer(ip items.Persister, t *testing.T) *httptest.Server {
+func setupServerAuthenticated(ip items.Persister, t *testing.T) *httptest.Server {
 	cfg := config.Config{}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	up := users.NewMockPersister(mc)
+	up.EXPECT().IsValidToken(gomock.Any()).Return(true, nil).AnyTimes()
 
 	is := items.NewService(ip)
 	us := upc.NewService(cfg)
+	user := users.NewService(up)
 
-	serv := NewAPI(is, us)
+	serv := NewAPI(is, us, user)
 
 	return httptest.NewServer(NewRouter(&serv, cfg))
 }
 
-func setupServerWithConfig(ip items.Persister, cfg config.Config, t *testing.T) *httptest.Server {
+func setupServer(ip items.Persister, up users.Persister, t *testing.T) *httptest.Server {
+	cfg := config.Config{}
+
 	is := items.NewService(ip)
 	us := upc.NewService(cfg)
+	user := users.NewService(up)
 
-	serv := NewAPI(is, us)
+	serv := NewAPI(is, us, user)
+
+	return httptest.NewServer(NewRouter(&serv, cfg))
+}
+
+func setupServerWithConfigAuthenticated(ip items.Persister, cfg config.Config, t *testing.T) *httptest.Server {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	up := users.NewMockPersister(mc)
+	up.EXPECT().IsValidToken(gomock.Any()).Return(true, nil).AnyTimes()
+
+	is := items.NewService(ip)
+	us := upc.NewService(cfg)
+	user := users.NewService(up)
+
+	serv := NewAPI(is, us, user)
 
 	return httptest.NewServer(NewRouter(&serv, cfg))
 }
@@ -92,7 +117,7 @@ func TestNotImplemented(t *testing.T) {
 	defer mc.Finish()
 
 	ip := items.NewMockPersister(mc)
-	server := setupServer(ip, t)
+	server := setupServerAuthenticated(ip, t)
 	defer server.Close()
 
 	resp, err := sendPost(server.URL+"/api/user/add", "")

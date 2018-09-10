@@ -1,11 +1,15 @@
 package persistence
 
 import (
+	"crypto/sha1"
+	"database/sql"
+	"encoding/base64"
 	"errors"
 	"fmt"
 
 	"github.com/Timothylock/inventory-management/config"
 	"github.com/Timothylock/inventory-management/items"
+	"github.com/Timothylock/inventory-management/users"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -147,4 +151,59 @@ func (m *MySQL) addLog(uID int, objID, action, details string) error {
 	_, err := m.conn.Exec(`INSERT INTO logs (USERID, OBJECTID, ACTION, DETAILS, DATE) VALUES
 	(?, ?, ?, ?, NOW())`, uID, objID, action, details)
 	return err
+}
+
+type UserDB struct {
+	ID         int    `db:"ID"`
+	IsSysAdmin int    `db:"ISSYSADMIN"`
+	Email      string `db:"EMAIL"`
+	Token      string `db:"TOKEN"`
+}
+
+// GetUser gets the given user if possible
+func (m *MySQL) GetUser(username, password string) (users.User, error) {
+	var user users.User
+	user.Valid = false
+
+	hasher := sha1.New()
+	hasher.Write([]byte(password))
+	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
+	var userdb UserDB
+	err := m.conn.Get(
+		&userdb,
+		"SELECT ID, ISSYSADMIN, EMAIL, TOKEN FROM users WHERE USERNAME = ? AND PASSWORD = ? AND ACTIVE = 1",
+		username, sha,
+	)
+	if err == sql.ErrNoRows {
+		return user, nil
+	} else if err != nil {
+		return user, err
+	}
+
+	user.Valid = true
+	user.ID = userdb.ID
+	user.IsSysAdmin = userdb.IsSysAdmin == 1
+	user.Email = userdb.Email
+	user.Token = userdb.Token
+	user.Username = username
+
+	return user, err
+}
+
+// IsValidToken returns whether the token is valid
+func (m *MySQL) IsValidToken(token string) (bool, error) {
+	var count int
+
+	err := m.conn.Get(
+		&count,
+		"SELECT count(1) FROM users WHERE token = ?",
+		token,
+	)
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, err
 }
