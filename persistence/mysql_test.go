@@ -1,12 +1,14 @@
 package persistence
 
 import (
+	"encoding/json"
 	"testing"
 
 	"errors"
 
 	"github.com/Timothylock/inventory-management/config"
 	"github.com/Timothylock/inventory-management/items"
+	"github.com/Timothylock/inventory-management/users"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
@@ -15,7 +17,9 @@ import (
 const (
 	updateItem       = `UPDATE items.+`
 	doesItemExist    = `SELECT count\(1\) FROM items.+`
+	isTokenValid     = `SELECT count\(1\) FROM users.+`
 	deleteItem       = `UPDATE items SET DELETED=1.+`
+	GetUser          = `SELECT ID\, ISSYSADMIN\, EMAIL\, TOKEN FROM users.+`
 	addItem          = `INSERT INTO items`
 	addItemOverwrite = `UPDATE items.+`
 	searchItems      = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
@@ -367,5 +371,106 @@ func TestAddItemOverwriteFailure(t *testing.T) {
 
 	err := db.AddItem(item, true)
 	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestIsValidToken(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"COUNT(1)"})
+	rows.AddRow(1)
+
+	mock.ExpectQuery(isTokenValid).
+		WithArgs("foo").
+		WillReturnRows(rows)
+
+	isValid, err := db.IsValidToken("foo")
+	assert.True(t, isValid)
+	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestIsNotValidToken(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"COUNT(1)"})
+	rows.AddRow(0)
+
+	mock.ExpectQuery(isTokenValid).
+		WithArgs("foo").
+		WillReturnRows(rows)
+
+	isValid, err := db.IsValidToken("foo")
+	assert.False(t, isValid)
+	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestIsValidTokenFail(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectQuery(isTokenValid).
+		WithArgs("foo").
+		WillReturnError(errors.New("sorry"))
+
+	_, err := db.IsValidToken("foo")
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetUserSuccess(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN"})
+	rows.AddRow(123, 1, "foo@bar.com", "someToken")
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("user", "nU4eI71bcnBGqeO0t9tXvY1u5oQ=").
+		WillReturnRows(rows)
+
+	expectedUser := users.User{
+		Valid:      true,
+		ID:         123,
+		Token:      "someToken",
+		Username:   "user",
+		IsSysAdmin: true,
+		Email:      "foo@bar.com",
+	}
+	expectedUserJson, err := json.Marshal(expectedUser)
+	assert.NoError(t, err)
+
+	u, err := db.GetUser("user", "pass")
+	assert.NoError(t, err)
+	uJson, err := json.Marshal(u)
+
+	assert.JSONEq(t, string(expectedUserJson), string(uJson))
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetUserNotFound(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN"})
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("user", "nU4eI71bcnBGqeO0t9tXvY1u5oQ=").
+		WillReturnRows(rows)
+
+	expectedUser := users.User{
+		Valid: false,
+	}
+	expectedUserJson, err := json.Marshal(expectedUser)
+	assert.NoError(t, err)
+
+	u, err := db.GetUser("user", "pass")
+	assert.NoError(t, err)
+	uJson, err := json.Marshal(u)
+
+	assert.JSONEq(t, string(expectedUserJson), string(uJson))
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

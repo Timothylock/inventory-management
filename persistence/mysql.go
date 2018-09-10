@@ -186,6 +186,7 @@ func (m *MySQL) GetUser(username, password string) (users.User, error) {
 	user.IsSysAdmin = userdb.IsSysAdmin == 1
 	user.Email = userdb.Email
 	user.Token = userdb.Token
+	user.Username = username
 
 	return user, err
 }
