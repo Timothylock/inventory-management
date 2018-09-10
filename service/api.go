@@ -43,7 +43,8 @@ func NewRouter(api *API, cfg config.Config) http.Handler {
 
 	// User
 	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.NotImplemented()))
-	router.Handler("POST", "/api/user/login", api.NotImplemented())
+	router.Handler("POST", "/api/user/login", api.Login())
+	router.Handler("GET", "/api/user/logincheck", middleware.UserRequired(api.LoginCheck()))
 	router.Handler("DELETE", "/api/user/logout", api.NotImplemented())
 
 	// Frontend
