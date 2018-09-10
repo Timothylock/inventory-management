@@ -19,8 +19,13 @@ CREATE TABLE `users` (
   `ID` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `USERNAME` text NOT NULL,
   `ACTIVE` int(1) NOT NULL DEFAULT '1',
-  `PASSWORD_HASHED` text NOT NULL,
-  PRIMARY KEY (`ID`)
+  `PASSWORD` text NOT NULL,
+  `ISSYSADMIN` int(1) NOT NULL DEFAULT '1',
+  `TOKEN` text NOT NULL,
+  `EMAIL` text NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `upass` (`USERNAME`(128),`PASSWORD`(64)),
+  KEY `token` (`TOKEN`(128))
 );
 
 CREATE TABLE `logs` (
