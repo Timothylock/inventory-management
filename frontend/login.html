@@ -38,7 +38,7 @@
                 </label>
                 <input type="password" class="form-control" id="password" required>
                 <br>
-                <button type="button" class="btn btn-primary btn-block" id="update">
+                <button type="button" class="btn btn-primary btn-block" id="login">
                     Log In
                 </button>
                 <a class="text-center" href="forgot_password.html">Forgot Password</a>
@@ -62,20 +62,23 @@
         return match && decodeURIComponent(match[1].replace(/\+/g, " "));
     }
 
-    // $.ajax({ cache: false,
-    //     url: "api/item/move",
-    //     method: "POST",
-    //     data: "{\"direction\": \"in\",\"id\": \"" + qs('id') + "\"\n}",
-    //     success: function (data) {
-    //         $("#loginwindow").hide();
-    //         $("#complete").show();
-    //     },
-    //     error: function (ajaxContext) {
-    //         var error = JSON.parse(ajaxContext.responseText);
-    //         $("#errorBody").text(friendlyError(error.code, error.details));
-    //         $("#loginwindow").hide();
-    //         $("#error").show();
-    //     }
-    // });
+    $("#login").click(function() {
+        $("#login").prop('disabled', true);
+
+        $.ajax({ cache: false,
+            url: "api/user/login",
+            method: "POST",
+            data: "{\"username\": \"" + $("#username").val() + "\",\"password\": \"" + $("#password").val()+ "\"}",
+            success: function (data) {
+                window.location.href = "index.html";
+            },
+            error: function (ajaxContext) {
+                $("#login").prop('disabled', false);
+                var error = JSON.parse(ajaxContext.responseText);
+                $("#errorBody").text("Error code " + error.code + " - " + error.details);
+                alert(error.details);
+            }
+        });
+    });
 </script>
 </html>

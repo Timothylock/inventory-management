@@ -11,6 +11,7 @@ import (
 	"github.com/Timothylock/inventory-management/middleware"
 	"github.com/Timothylock/inventory-management/responses"
 	"github.com/Timothylock/inventory-management/upc"
+	"github.com/Timothylock/inventory-management/users"
 
 	"io/ioutil"
 
@@ -20,12 +21,14 @@ import (
 type API struct {
 	itemsService items.Service
 	upcService   upc.Service
+	userService  users.Service
 }
 
-func NewAPI(is items.Service, us upc.Service) API {
+func NewAPI(is items.Service, us upc.Service, user users.Service) API {
 	return API{
 		itemsService: is,
 		upcService:   us,
+		userService:  user,
 	}
 }
 
@@ -33,18 +36,18 @@ func NewRouter(api *API, cfg config.Config) http.Handler {
 	router := httprouter.New()
 
 	// Items
-	router.Handler("GET", "/api/item/info", middleware.UserRequired(api.SearchItems()))
-	router.Handler("POST", "/api/item/move", middleware.UserRequired(api.MoveItem()))
-	router.Handler("POST", "/api/item", middleware.UserRequired(api.AddItem()))
-	router.Handler("DELETE", "/api/item", middleware.UserRequired(api.DeleteItem()))
+	router.Handler("GET", "/api/item/info", middleware.UserRequired(api.userService, api.SearchItems()))
+	router.Handler("POST", "/api/item/move", middleware.UserRequired(api.userService, api.MoveItem()))
+	router.Handler("POST", "/api/item", middleware.UserRequired(api.userService, api.AddItem()))
+	router.Handler("DELETE", "/api/item", middleware.UserRequired(api.userService, api.DeleteItem()))
 
 	// UPC
-	router.Handler("GET", "/api/lookup", middleware.UserRequired(api.LookupBarcode()))
+	router.Handler("GET", "/api/lookup", middleware.UserRequired(api.userService, api.LookupBarcode()))
 
 	// User
-	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.NotImplemented()))
+	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.userService, api.NotImplemented()))
 	router.Handler("POST", "/api/user/login", api.Login())
-	router.Handler("GET", "/api/user/logincheck", middleware.UserRequired(api.LoginCheck()))
+	router.Handler("GET", "/api/user/logincheck", middleware.UserRequired(api.userService, api.LoginCheck()))
 	router.Handler("DELETE", "/api/user/logout", api.NotImplemented())
 
 	// Frontend

@@ -11,6 +11,7 @@ import (
 	"github.com/Timothylock/inventory-management/persistence"
 	"github.com/Timothylock/inventory-management/service"
 	"github.com/Timothylock/inventory-management/upc"
+	"github.com/Timothylock/inventory-management/users"
 )
 
 func main() {
@@ -28,7 +29,9 @@ func main() {
 
 	is := items.NewService(persister)
 	us := upc.NewService(*cfg)
-	api := service.NewAPI(is, us)
+	user := users.NewService(persister)
+	api := service.NewAPI(is, us, user)
+
 	router := service.NewRouter(&api, *cfg)
 
 	log.Fatal(http.ListenAndServe(":9090", router))

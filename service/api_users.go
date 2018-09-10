@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -22,9 +23,18 @@ func (a *API) Login() http.Handler {
 			return
 		}
 
-		expiration := time.Now().Add(31 * 24 * time.Hour)
-		cookie := http.Cookie{Name: "token", Value: "atoken", Expires: expiration}
+		u, err := a.userService.CheckUser(ad.Username, ad.Password)
+		if err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+		if !u.Valid {
+			responses.SendError(w, responses.Unauthorized(errors.New("incorrect username or password")))
+			return
+		}
 
+		expiration := time.Now().Add(31 * 24 * time.Hour)
+		cookie := http.Cookie{Name: "token", Value: u.Token, Expires: expiration, Path: "/"}
 		http.SetCookie(w, &cookie)
 
 		fmt.Fprint(w, "OK")
