@@ -474,3 +474,16 @@ func TestGetUserNotFound(t *testing.T) {
 	assert.JSONEq(t, string(expectedUserJson), string(uJson))
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestGetUserErr(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("user", "nU4eI71bcnBGqeO0t9tXvY1u5oQ=").
+		WillReturnError(errors.New("error"))
+
+	_, err := db.GetUser("user", "pass")
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
