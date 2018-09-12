@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Timothylock/inventory-management/responses"
+	"github.com/Timothylock/inventory-management/users"
 )
 
 type LoginBody struct {
@@ -41,7 +42,7 @@ func (a *API) Login() http.Handler {
 	})
 }
 
-func (a *API) LoginCheck() http.Handler {
+func (a *API) LoginCheck(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "OK")
 	})

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/responses"
+	"github.com/Timothylock/inventory-management/users"
 )
 
 type MoveBody struct {
@@ -22,7 +23,7 @@ type AddBody struct {
 	Quantity   int    `json:"quantity"`
 }
 
-func (a *API) SearchItems() http.Handler {
+func (a *API) SearchItems(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		search, err := getRequiredParam(r, "q")
 		if err != nil {
@@ -40,7 +41,7 @@ func (a *API) SearchItems() http.Handler {
 	})
 }
 
-func (a *API) DeleteItem() http.Handler {
+func (a *API) DeleteItem(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id, err := getRequiredParam(r, "id")
 		if err != nil {
@@ -61,7 +62,7 @@ func (a *API) DeleteItem() http.Handler {
 	})
 }
 
-func (a *API) AddItem() http.Handler {
+func (a *API) AddItem(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ad := AddBody{}
 		err := parseBody(r, &ad)
@@ -103,7 +104,7 @@ func (a *API) AddItem() http.Handler {
 	})
 }
 
-func (a *API) MoveItem() http.Handler {
+func (a *API) MoveItem(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mb := MoveBody{}
 		err := parseBody(r, &mb)

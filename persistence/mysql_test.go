@@ -17,9 +17,8 @@ import (
 const (
 	updateItem       = `UPDATE items.+`
 	doesItemExist    = `SELECT count\(1\) FROM items.+`
-	isTokenValid     = `SELECT count\(1\) FROM users.+`
 	deleteItem       = `UPDATE items SET DELETED=1.+`
-	GetUser          = `SELECT ID\, ISSYSADMIN\, EMAIL\, TOKEN FROM users.+`
+	GetUser          = `SELECT ID\, ISSYSADMIN\, EMAIL\, TOKEN\, USERNAME FROM users.+`
 	addItem          = `INSERT INTO items`
 	addItemOverwrite = `UPDATE items.+`
 	searchItems      = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
@@ -378,15 +377,15 @@ func TestIsValidToken(t *testing.T) {
 	db, mock := newTestDB(t)
 	defer db.conn.Close()
 
-	rows := sqlmock.NewRows([]string{"COUNT(1)"})
-	rows.AddRow(1)
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN", "USERNAME"})
+	rows.AddRow(0, 1, "foo@bar.com", "someToken", "someUser")
 
-	mock.ExpectQuery(isTokenValid).
+	mock.ExpectQuery(GetUser).
 		WithArgs("foo").
 		WillReturnRows(rows)
 
-	isValid, err := db.IsValidToken("foo")
-	assert.True(t, isValid)
+	user, err := db.GetUserByToken("foo")
+	assert.True(t, user.Valid)
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -395,15 +394,14 @@ func TestIsNotValidToken(t *testing.T) {
 	db, mock := newTestDB(t)
 	defer db.conn.Close()
 
-	rows := sqlmock.NewRows([]string{"COUNT(1)"})
-	rows.AddRow(0)
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN", "USERNAME"})
 
-	mock.ExpectQuery(isTokenValid).
+	mock.ExpectQuery(GetUser).
 		WithArgs("foo").
 		WillReturnRows(rows)
 
-	isValid, err := db.IsValidToken("foo")
-	assert.False(t, isValid)
+	user, err := db.GetUserByToken("foo")
+	assert.False(t, user.Valid)
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -412,11 +410,11 @@ func TestIsValidTokenFail(t *testing.T) {
 	db, mock := newTestDB(t)
 	defer db.conn.Close()
 
-	mock.ExpectQuery(isTokenValid).
+	mock.ExpectQuery(GetUser).
 		WithArgs("foo").
 		WillReturnError(errors.New("sorry"))
 
-	_, err := db.IsValidToken("foo")
+	_, err := db.GetUserByToken("foo")
 	assert.Error(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -425,25 +423,25 @@ func TestGetUserSuccess(t *testing.T) {
 	db, mock := newTestDB(t)
 	defer db.conn.Close()
 
-	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN"})
-	rows.AddRow(123, 1, "foo@bar.com", "someToken")
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN", "USERNAME"})
+	rows.AddRow(123, 1, "foo@bar.com", "someToken", "someUser")
 
 	mock.ExpectQuery(GetUser).
-		WithArgs("user", "nU4eI71bcnBGqeO0t9tXvY1u5oQ=").
+		WithArgs("someUser", "nU4eI71bcnBGqeO0t9tXvY1u5oQ=").
 		WillReturnRows(rows)
 
 	expectedUser := users.User{
 		Valid:      true,
 		ID:         123,
 		Token:      "someToken",
-		Username:   "user",
+		Username:   "someUser",
 		IsSysAdmin: true,
 		Email:      "foo@bar.com",
 	}
 	expectedUserJson, err := json.Marshal(expectedUser)
 	assert.NoError(t, err)
 
-	u, err := db.GetUser("user", "pass")
+	u, err := db.GetUser("someUser", "pass")
 	assert.NoError(t, err)
 	uJson, err := json.Marshal(u)
 

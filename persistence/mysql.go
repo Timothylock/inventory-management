@@ -158,6 +158,7 @@ type UserDB struct {
 	IsSysAdmin int    `db:"ISSYSADMIN"`
 	Email      string `db:"EMAIL"`
 	Token      string `db:"TOKEN"`
+	Username   string `db:"USERNAME"`
 }
 
 // GetUser gets the given user if possible
@@ -172,7 +173,7 @@ func (m *MySQL) GetUser(username, password string) (users.User, error) {
 	var userdb UserDB
 	err := m.conn.Get(
 		&userdb,
-		"SELECT ID, ISSYSADMIN, EMAIL, TOKEN FROM users WHERE USERNAME = ? AND PASSWORD = ? AND ACTIVE = 1",
+		"SELECT ID, ISSYSADMIN, EMAIL, TOKEN, USERNAME FROM users WHERE USERNAME = ? AND PASSWORD = ? AND ACTIVE = 1",
 		username, sha,
 	)
 	if err == sql.ErrNoRows {
@@ -186,24 +187,33 @@ func (m *MySQL) GetUser(username, password string) (users.User, error) {
 	user.IsSysAdmin = userdb.IsSysAdmin == 1
 	user.Email = userdb.Email
 	user.Token = userdb.Token
-	user.Username = username
+	user.Username = userdb.Username
 
 	return user, err
 }
 
-// IsValidToken returns whether the token is valid
-func (m *MySQL) IsValidToken(token string) (bool, error) {
-	var count int
-
+// GetUserByToken returns the user by token
+func (m *MySQL) GetUserByToken(token string) (users.User, error) {
+	var user users.User
+	user.Valid = false
+	var userdb UserDB
 	err := m.conn.Get(
-		&count,
-		"SELECT count(1) FROM users WHERE token = ?",
+		&userdb,
+		"SELECT ID, ISSYSADMIN, EMAIL, TOKEN, USERNAME FROM users WHERE TOKEN = ? AND ACTIVE = 1",
 		token,
 	)
-
-	if err != nil {
-		return false, err
+	if err == sql.ErrNoRows {
+		return user, nil
+	} else if err != nil {
+		return user, err
 	}
 
-	return count > 0, err
+	user.Valid = true
+	user.ID = userdb.ID
+	user.IsSysAdmin = userdb.IsSysAdmin == 1
+	user.Email = userdb.Email
+	user.Token = userdb.Token
+	user.Username = userdb.Username
+
+	return user, err
 }

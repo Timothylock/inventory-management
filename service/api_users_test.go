@@ -103,21 +103,21 @@ func TestLoginCheck(t *testing.T) {
 		{
 			testName: "bad login",
 			setMock: func(up *users.MockPersister) {
-				up.EXPECT().IsValidToken(gomock.Any()).Return(true, nil)
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true}, nil).AnyTimes()
 			},
 			expectCode: 200,
 		},
 		{
 			testName: "bad login",
 			setMock: func(up *users.MockPersister) {
-				up.EXPECT().IsValidToken(gomock.Any()).Return(false, nil)
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: false}, nil).AnyTimes()
 			},
 			expectCode: 401,
 		},
 		{
 			testName: "bad login",
 			setMock: func(up *users.MockPersister) {
-				up.EXPECT().IsValidToken(gomock.Any()).Return(true, errors.New("error"))
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true}, errors.New("error")).AnyTimes()
 			},
 			expectCode: 500,
 		},

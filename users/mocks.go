@@ -46,15 +46,15 @@ func (mr *MockPersisterMockRecorder) GetUser(username, password interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockPersister)(nil).GetUser), username, password)
 }
 
-// IsValidToken mocks base method
-func (m *MockPersister) IsValidToken(token string) (bool, error) {
-	ret := m.ctrl.Call(m, "IsValidToken", token)
-	ret0, _ := ret[0].(bool)
+// GetUserByToken mocks base method
+func (m *MockPersister) GetUserByToken(token string) (User, error) {
+	ret := m.ctrl.Call(m, "GetUserByToken", token)
+	ret0, _ := ret[0].(User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// IsValidToken indicates an expected call of IsValidToken
-func (mr *MockPersisterMockRecorder) IsValidToken(token interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidToken", reflect.TypeOf((*MockPersister)(nil).IsValidToken), token)
+// GetUserByToken indicates an expected call of GetUserByToken
+func (mr *MockPersisterMockRecorder) GetUserByToken(token interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByToken", reflect.TypeOf((*MockPersister)(nil).GetUserByToken), token)
 }
