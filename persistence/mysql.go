@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/Timothylock/inventory-management/config"
 	"github.com/Timothylock/inventory-management/items"
@@ -65,7 +66,7 @@ func (m *MySQL) SearchItems(search string) (items.ItemDetailList, error) {
 	return dl, err
 }
 
-func (m *MySQL) MoveItem(ID, direction string) error {
+func (m *MySQL) MoveItem(ID, direction string, userID int) error {
 	var status string
 	if direction == "in" {
 		status = "checked in"
@@ -84,12 +85,12 @@ func (m *MySQL) MoveItem(ID, direction string) error {
 	}
 
 	_, err = m.conn.Exec(
-		"UPDATE items SET STATUS = ? WHERE ID = ?",
-		status, ID,
+		"UPDATE items SET STATUS = ?, LAST_PERFORMED_BY = ? WHERE ID = ?",
+		status, userID, ID,
 	)
 
 	if err == nil {
-		m.addLog(0, ID, status, "")
+		m.addLog(userID, ID, status, "")
 	}
 
 	return err
@@ -119,15 +120,18 @@ func (m *MySQL) AddItem(obj items.ItemDetail, overwrite bool) error {
 	}
 
 	if err == nil {
-		m.addLog(0, obj.ID, "add", fmt.Sprintf("overwrite/skip exist check flag was recieved as %t", overwrite))
+		uid, err := strconv.Atoi(obj.LastPerformedBy)
+		if err == nil {
+			m.addLog(uid, obj.ID, "add", fmt.Sprintf("overwrite/skip exist check flag was recieved as %t", overwrite))
+		}
 	}
 
 	return err
 }
 
-func (m *MySQL) DeleteItem(ID string) error {
-	r, err := m.conn.Exec(`UPDATE items SET DELETED=1 WHERE ID=?`,
-		ID,
+func (m *MySQL) DeleteItem(ID string, userID int) error {
+	r, err := m.conn.Exec(`UPDATE items SET DELETED=1, LAST_PERFORMED_BY=? WHERE ID=?`,
+		userID, ID,
 	)
 	if err != nil {
 		return err
@@ -142,7 +146,7 @@ func (m *MySQL) DeleteItem(ID string) error {
 		return items.ItemNotFoundErr
 	}
 
-	m.addLog(0, ID, "delete", "")
+	m.addLog(userID, ID, "delete", "")
 
 	return err
 }
@@ -158,6 +162,7 @@ type UserDB struct {
 	IsSysAdmin int    `db:"ISSYSADMIN"`
 	Email      string `db:"EMAIL"`
 	Token      string `db:"TOKEN"`
+	Username   string `db:"USERNAME"`
 }
 
 // GetUser gets the given user if possible
@@ -172,7 +177,7 @@ func (m *MySQL) GetUser(username, password string) (users.User, error) {
 	var userdb UserDB
 	err := m.conn.Get(
 		&userdb,
-		"SELECT ID, ISSYSADMIN, EMAIL, TOKEN FROM users WHERE USERNAME = ? AND PASSWORD = ? AND ACTIVE = 1",
+		"SELECT ID, ISSYSADMIN, EMAIL, TOKEN, USERNAME FROM users WHERE USERNAME = ? AND PASSWORD = ? AND ACTIVE = 1",
 		username, sha,
 	)
 	if err == sql.ErrNoRows {
@@ -186,24 +191,33 @@ func (m *MySQL) GetUser(username, password string) (users.User, error) {
 	user.IsSysAdmin = userdb.IsSysAdmin == 1
 	user.Email = userdb.Email
 	user.Token = userdb.Token
-	user.Username = username
+	user.Username = userdb.Username
 
 	return user, err
 }
 
-// IsValidToken returns whether the token is valid
-func (m *MySQL) IsValidToken(token string) (bool, error) {
-	var count int
-
+// GetUserByToken returns the user by token
+func (m *MySQL) GetUserByToken(token string) (users.User, error) {
+	var user users.User
+	user.Valid = false
+	var userdb UserDB
 	err := m.conn.Get(
-		&count,
-		"SELECT count(1) FROM users WHERE token = ?",
+		&userdb,
+		"SELECT ID, ISSYSADMIN, EMAIL, TOKEN, USERNAME FROM users WHERE TOKEN = ? AND ACTIVE = 1",
 		token,
 	)
-
-	if err != nil {
-		return false, err
+	if err == sql.ErrNoRows {
+		return user, nil
+	} else if err != nil {
+		return user, err
 	}
 
-	return count > 0, err
+	user.Valid = true
+	user.ID = userdb.ID
+	user.IsSysAdmin = userdb.IsSysAdmin == 1
+	user.Email = userdb.Email
+	user.Token = userdb.Token
+	user.Username = userdb.Username
+
+	return user, err
 }

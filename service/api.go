@@ -36,19 +36,19 @@ func NewRouter(api *API, cfg config.Config) http.Handler {
 	router := httprouter.New()
 
 	// Items
-	router.Handler("GET", "/api/item/info", middleware.UserRequired(api.userService, api.SearchItems()))
-	router.Handler("POST", "/api/item/move", middleware.UserRequired(api.userService, api.MoveItem()))
-	router.Handler("POST", "/api/item", middleware.UserRequired(api.userService, api.AddItem()))
-	router.Handler("DELETE", "/api/item", middleware.UserRequired(api.userService, api.DeleteItem()))
+	router.Handler("GET", "/api/item/info", middleware.UserRequired(api.userService, api.SearchItems))
+	router.Handler("POST", "/api/item/move", middleware.UserRequired(api.userService, api.MoveItem))
+	router.Handler("POST", "/api/item", middleware.UserRequired(api.userService, api.AddItem))
+	router.Handler("DELETE", "/api/item", middleware.UserRequired(api.userService, api.DeleteItem))
 
 	// UPC
-	router.Handler("GET", "/api/lookup", middleware.UserRequired(api.userService, api.LookupBarcode()))
+	router.Handler("GET", "/api/lookup", middleware.UserRequired(api.userService, api.LookupBarcode))
 
 	// User
-	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.userService, api.NotImplemented()))
+	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.userService, api.NotImplemented))
 	router.Handler("POST", "/api/user/login", api.Login())
-	router.Handler("GET", "/api/user/logincheck", middleware.UserRequired(api.userService, api.LoginCheck()))
-	router.Handler("DELETE", "/api/user/logout", api.NotImplemented())
+	router.Handler("GET", "/api/user/logincheck", middleware.UserRequired(api.userService, api.LoginCheck))
+	router.Handler("DELETE", "/api/user/logout", middleware.UserOptional(api.userService, api.NotImplemented))
 
 	// Frontend
 	mux := http.NewServeMux()
@@ -58,7 +58,7 @@ func NewRouter(api *API, cfg config.Config) http.Handler {
 	return mux
 }
 
-func (a *API) NotImplemented() http.Handler {
+func (a *API) NotImplemented(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Not yet implemented\n")
 	})

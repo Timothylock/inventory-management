@@ -2,9 +2,11 @@ package service
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/responses"
+	"github.com/Timothylock/inventory-management/users"
 )
 
 type MoveBody struct {
@@ -22,7 +24,7 @@ type AddBody struct {
 	Quantity   int    `json:"quantity"`
 }
 
-func (a *API) SearchItems() http.Handler {
+func (a *API) SearchItems(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		search, err := getRequiredParam(r, "q")
 		if err != nil {
@@ -40,7 +42,7 @@ func (a *API) SearchItems() http.Handler {
 	})
 }
 
-func (a *API) DeleteItem() http.Handler {
+func (a *API) DeleteItem(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id, err := getRequiredParam(r, "id")
 		if err != nil {
@@ -48,7 +50,7 @@ func (a *API) DeleteItem() http.Handler {
 			return
 		}
 
-		err = a.itemsService.DeleteItem(id)
+		err = a.itemsService.DeleteItem(id, u.ID)
 		if err != nil && err == items.ItemNotFoundErr {
 			responses.SendError(w, responses.ItemNotFound(err))
 			return
@@ -61,7 +63,7 @@ func (a *API) DeleteItem() http.Handler {
 	})
 }
 
-func (a *API) AddItem() http.Handler {
+func (a *API) AddItem(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ad := AddBody{}
 		err := parseBody(r, &ad)
@@ -85,7 +87,7 @@ func (a *API) AddItem() http.Handler {
 			PictureURL:      ad.PictureURL,
 			Details:         ad.Details,
 			Location:        ad.Location,
-			LastPerformedBy: "0", // Overloaded because it contains the actual username in SearchItems
+			LastPerformedBy: strconv.Itoa(u.ID), // Overloaded because it contains the actual username in SearchItems
 			Quantity:        ad.Quantity,
 			Status:          "checked in",
 		}
@@ -103,7 +105,7 @@ func (a *API) AddItem() http.Handler {
 	})
 }
 
-func (a *API) MoveItem() http.Handler {
+func (a *API) MoveItem(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mb := MoveBody{}
 		err := parseBody(r, &mb)
@@ -117,7 +119,7 @@ func (a *API) MoveItem() http.Handler {
 			return
 		}
 
-		err = a.itemsService.MoveItem(mb.ID, mb.Direction)
+		err = a.itemsService.MoveItem(mb.ID, mb.Direction, u.ID)
 		if err != nil && err == items.ItemNotFoundErr {
 			responses.SendError(w, responses.ItemNotFound(err))
 			return

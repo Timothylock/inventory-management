@@ -2,7 +2,7 @@ package users
 
 type Persister interface {
 	GetUser(username, password string) (User, error)
-	IsValidToken(token string) (bool, error)
+	GetUserByToken(token string) (User, error)
 }
 
 type User struct {
@@ -28,6 +28,6 @@ func (s *Service) CheckUser(username, password string) (User, error) {
 	return s.persister.GetUser(username, password)
 }
 
-func (s *Service) IsValidToken(token string) (bool, error) {
-	return s.persister.IsValidToken(token)
+func (s *Service) CheckUserByToken(token string) (User, error) {
+	return s.persister.GetUserByToken(token)
 }
