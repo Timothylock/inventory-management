@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/responses"
@@ -49,7 +50,7 @@ func (a *API) DeleteItem(u users.User) http.Handler {
 			return
 		}
 
-		err = a.itemsService.DeleteItem(id)
+		err = a.itemsService.DeleteItem(id, u.ID)
 		if err != nil && err == items.ItemNotFoundErr {
 			responses.SendError(w, responses.ItemNotFound(err))
 			return
@@ -86,7 +87,7 @@ func (a *API) AddItem(u users.User) http.Handler {
 			PictureURL:      ad.PictureURL,
 			Details:         ad.Details,
 			Location:        ad.Location,
-			LastPerformedBy: "0", // Overloaded because it contains the actual username in SearchItems
+			LastPerformedBy: strconv.Itoa(u.ID), // Overloaded because it contains the actual username in SearchItems
 			Quantity:        ad.Quantity,
 			Status:          "checked in",
 		}
@@ -118,7 +119,7 @@ func (a *API) MoveItem(u users.User) http.Handler {
 			return
 		}
 
-		err = a.itemsService.MoveItem(mb.ID, mb.Direction)
+		err = a.itemsService.MoveItem(mb.ID, mb.Direction, u.ID)
 		if err != nil && err == items.ItemNotFoundErr {
 			responses.SendError(w, responses.ItemNotFound(err))
 			return

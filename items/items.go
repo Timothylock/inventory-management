@@ -1,10 +1,12 @@
 package items
 
-import "errors"
+import (
+	"errors"
+)
 
 type Persister interface {
-	MoveItem(ID, direction string) error
-	DeleteItem(ID string) error
+	MoveItem(ID, direction string, userID int) error
+	DeleteItem(ID string, userID int) error
 	SearchItems(search string) (ItemDetailList, error)
 	AddItem(obj ItemDetail, overwrite bool) error
 }
@@ -39,14 +41,14 @@ func (s *Service) FetchItems(search string) (ItemDetailList, error) {
 	return s.persister.SearchItems(search)
 }
 
-func (s *Service) DeleteItem(id string) error {
-	return s.persister.DeleteItem(id)
+func (s *Service) DeleteItem(id string, userID int) error {
+	return s.persister.DeleteItem(id, userID)
 }
 
 func (s *Service) AddItem(item ItemDetail, overwrite bool) error {
 	return s.persister.AddItem(item, overwrite)
 }
 
-func (s *Service) MoveItem(id, direction string) error {
-	return s.persister.MoveItem(id, direction)
+func (s *Service) MoveItem(id, direction string, userID int) error {
+	return s.persister.MoveItem(id, direction, userID)
 }

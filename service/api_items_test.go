@@ -37,7 +37,7 @@ func TestMoveItem(t *testing.T) {
 		{
 			testName: "success",
 			setMock: func(ip *items.MockPersister) {
-				ip.EXPECT().MoveItem("1234", "in").Return(nil)
+				ip.EXPECT().MoveItem("1234", "in", 123).Return(nil)
 			},
 			expectCode:       200,
 			expectedResponse: responses.Success{Success: true},
@@ -49,7 +49,7 @@ func TestMoveItem(t *testing.T) {
 		{
 			testName: "internal error",
 			setMock: func(ip *items.MockPersister) {
-				ip.EXPECT().MoveItem("1234", "in").Return(errors.New("sorry"))
+				ip.EXPECT().MoveItem("1234", "in", 123).Return(errors.New("sorry"))
 			},
 			expectCode: 500,
 			body: MoveBody{
@@ -60,7 +60,7 @@ func TestMoveItem(t *testing.T) {
 		{
 			testName: "item not found error",
 			setMock: func(ip *items.MockPersister) {
-				ip.EXPECT().MoveItem("1234", "in").Return(items.ItemNotFoundErr)
+				ip.EXPECT().MoveItem("1234", "in", 123).Return(items.ItemNotFoundErr)
 			},
 			expectCode: 404,
 			body: MoveBody{
@@ -138,7 +138,7 @@ func TestDeleteItem(t *testing.T) {
 		{
 			testName: "success",
 			setMock: func(ip *items.MockPersister) {
-				ip.EXPECT().DeleteItem("1").Return(nil)
+				ip.EXPECT().DeleteItem("1", 123).Return(nil)
 			},
 			expectCode:       200,
 			expectedResponse: responses.Success{Success: true},
@@ -153,7 +153,7 @@ func TestDeleteItem(t *testing.T) {
 		{
 			testName: "internal error",
 			setMock: func(ip *items.MockPersister) {
-				ip.EXPECT().DeleteItem("1").Return(errors.New("oops"))
+				ip.EXPECT().DeleteItem("1", 123).Return(errors.New("oops"))
 			},
 			expectCode: 500,
 			id:         "1",
@@ -161,7 +161,7 @@ func TestDeleteItem(t *testing.T) {
 		{
 			testName: "item not found",
 			setMock: func(ip *items.MockPersister) {
-				ip.EXPECT().DeleteItem("1").Return(items.ItemNotFoundErr)
+				ip.EXPECT().DeleteItem("1", 123).Return(items.ItemNotFoundErr)
 			},
 			expectCode: 404,
 			id:         "1",
@@ -334,7 +334,7 @@ func TestAddItem(t *testing.T) {
 					Details:         "fum",
 					Location:        "bah",
 					Quantity:        1,
-					LastPerformedBy: "0",
+					LastPerformedBy: "123",
 					Status:          "checked in",
 				}, false).Return(nil)
 			},
@@ -374,7 +374,7 @@ func TestAddItem(t *testing.T) {
 					Details:         "fum",
 					Location:        "bah",
 					Quantity:        1,
-					LastPerformedBy: "0",
+					LastPerformedBy: "123",
 					Status:          "checked in",
 				}, false).Return(items.ItemAlreadyExistsErr)
 			},
@@ -400,7 +400,7 @@ func TestAddItem(t *testing.T) {
 					Details:         "fum",
 					Location:        "bah",
 					Quantity:        1,
-					LastPerformedBy: "0",
+					LastPerformedBy: "123",
 					Status:          "checked in",
 				}, false).Return(errors.New("sorry"))
 			},

@@ -34,27 +34,27 @@ func (m *MockPersister) EXPECT() *MockPersisterMockRecorder {
 }
 
 // MoveItem mocks base method
-func (m *MockPersister) MoveItem(ID, direction string) error {
-	ret := m.ctrl.Call(m, "MoveItem", ID, direction)
+func (m *MockPersister) MoveItem(ID, direction string, userID int) error {
+	ret := m.ctrl.Call(m, "MoveItem", ID, direction, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // MoveItem indicates an expected call of MoveItem
-func (mr *MockPersisterMockRecorder) MoveItem(ID, direction interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveItem", reflect.TypeOf((*MockPersister)(nil).MoveItem), ID, direction)
+func (mr *MockPersisterMockRecorder) MoveItem(ID, direction, userID interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveItem", reflect.TypeOf((*MockPersister)(nil).MoveItem), ID, direction, userID)
 }
 
 // DeleteItem mocks base method
-func (m *MockPersister) DeleteItem(ID string) error {
-	ret := m.ctrl.Call(m, "DeleteItem", ID)
+func (m *MockPersister) DeleteItem(ID string, userID int) error {
+	ret := m.ctrl.Call(m, "DeleteItem", ID, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteItem indicates an expected call of DeleteItem
-func (mr *MockPersisterMockRecorder) DeleteItem(ID interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteItem", reflect.TypeOf((*MockPersister)(nil).DeleteItem), ID)
+func (mr *MockPersisterMockRecorder) DeleteItem(ID, userID interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteItem", reflect.TypeOf((*MockPersister)(nil).DeleteItem), ID, userID)
 }
 
 // SearchItems mocks base method

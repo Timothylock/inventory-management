@@ -80,17 +80,17 @@ func TestMoveItem(t *testing.T) {
 			rows.AddRow(1)
 
 			if tc.direction != "in" && tc.direction != "out" {
-				err := db.MoveItem("1234", tc.direction)
+				err := db.MoveItem("1234", tc.direction, 123)
 				assert.Error(t, err)
 			} else {
 				mock.ExpectQuery(doesItemExist).
 					WithArgs("1234").
 					WillReturnRows(rows)
 				mock.ExpectExec(updateItem).
-					WithArgs(tc.directionDB, "1234").
+					WithArgs(tc.directionDB, 123, "1234").
 					WillReturnResult(sqlmock.NewResult(1234, 1))
 
-				err := db.MoveItem("1234", tc.direction)
+				err := db.MoveItem("1234", tc.direction, 123)
 				assert.NoError(t, err)
 				assert.NoError(t, mock.ExpectationsWereMet())
 			}
@@ -109,7 +109,7 @@ func TestMoveItemNotFound(t *testing.T) {
 		WithArgs("1234").
 		WillReturnRows(rows)
 
-	err := db.MoveItem("1234", "in")
+	err := db.MoveItem("1234", "in", 123)
 	assert.Error(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -122,7 +122,7 @@ func TestMoveItemInternalErr(t *testing.T) {
 		WithArgs("1234").
 		WillReturnError(errors.New("sorry"))
 
-	err := db.MoveItem("1234", "in")
+	err := db.MoveItem("1234", "in", 123)
 	assert.Error(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -132,10 +132,10 @@ func TestDeleteItemInternalErr(t *testing.T) {
 	defer db.conn.Close()
 
 	mock.ExpectExec(deleteItem).
-		WithArgs("1234").
+		WithArgs(123, "1234").
 		WillReturnError(errors.New("sorry"))
 
-	err := db.DeleteItem("1234")
+	err := db.DeleteItem("1234", 123)
 	assert.Error(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -145,10 +145,10 @@ func TestDeleteItemNoRowsAff(t *testing.T) {
 	defer db.conn.Close()
 
 	mock.ExpectExec(deleteItem).
-		WithArgs("1234").
+		WithArgs(123, "1234").
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
-	err := db.DeleteItem("1234")
+	err := db.DeleteItem("1234", 123)
 	assert.Equal(t, items.ItemNotFoundErr, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -158,10 +158,10 @@ func TestDeleteItemSuccess(t *testing.T) {
 	defer db.conn.Close()
 
 	mock.ExpectExec(deleteItem).
-		WithArgs("1234").
+		WithArgs(123, "1234").
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := db.DeleteItem("1234")
+	err := db.DeleteItem("1234", 123)
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
@@ -297,7 +297,7 @@ func TestAddItemSuccess(t *testing.T) {
 		PictureURL:      "PICTURE_URL",
 		Details:         "DETAILS",
 		Location:        "LOCATION",
-		LastPerformedBy: "USERNAME",
+		LastPerformedBy: "1",
 		Quantity:        1,
 		Status:          "checked in",
 	}
@@ -306,7 +306,7 @@ func TestAddItemSuccess(t *testing.T) {
 		WithArgs("ID").
 		WillReturnRows(rows)
 	mock.ExpectExec(addItem).
-		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", 1, "checked in").
+		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "1", 1, "checked in").
 		WillReturnResult(sqlmock.NewResult(123, 1))
 
 	err := db.AddItem(item, false)
@@ -328,7 +328,7 @@ func TestAddItemOverwriteSuccess(t *testing.T) {
 		PictureURL:      "PICTURE_URL",
 		Details:         "DETAILS",
 		Location:        "LOCATION",
-		LastPerformedBy: "USERNAME",
+		LastPerformedBy: "1",
 		Quantity:        1,
 		Status:          "checked in",
 	}
@@ -337,7 +337,7 @@ func TestAddItemOverwriteSuccess(t *testing.T) {
 		WithArgs("ID").
 		WillReturnRows(rows)
 	mock.ExpectExec(addItemOverwrite).
-		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "USERNAME", 1, "ID").
+		WithArgs("ID", "NAME", "CATEGORY", "PICTURE_URL", "DETAILS", "LOCATION", "1", 1, "ID").
 		WillReturnResult(sqlmock.NewResult(123, 1))
 
 	err := db.AddItem(item, true)
@@ -359,7 +359,7 @@ func TestAddItemOverwriteFailure(t *testing.T) {
 		PictureURL:      "PICTURE_URL",
 		Details:         "DETAILS",
 		Location:        "LOCATION",
-		LastPerformedBy: "USERNAME",
+		LastPerformedBy: "1",
 		Quantity:        1,
 		Status:          "checked in",
 	}
