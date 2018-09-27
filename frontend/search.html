@@ -32,6 +32,18 @@
             <div class="col-md-12">
                 <h3 class="text-center">No Results</h3>
                 <p class="text-center" id="noresultsmsg"></p>
+                <form role="form" lpformnum="2">
+                    <div class="form-group">
+                        <label for="query">
+                            Search Keywords
+                        </label>
+                        <input type="text" class="form-control" id="query">
+                    </div>
+                    <button type="button" class="btn btn-primary btn-block" id="search">
+                        Search Again
+                    </button>
+                </form>
+                <br>
                 <a class="btn btn-block btn-primary" href="/" role="button">Return To Home</a>
             </div>
         </div>
@@ -147,6 +159,11 @@
             $("#searching").hide();
             $("#error").show();
         }
+    });
+
+    $("#query").val(qs("q"));
+    $("#search").click(function() {
+        window.location.href = "search.html?q=" + $("#query").val();
     });
 </script>
 </html>
