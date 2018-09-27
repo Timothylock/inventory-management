@@ -47,3 +47,15 @@ func (a *API) LoginCheck(u users.User) http.Handler {
 		fmt.Fprint(w, "OK")
 	})
 }
+
+func (a *API) FetchUsers(u users.User) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		us, err := a.userService.GetUsers()
+		if err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		sendJSONorErr(us, w)
+	})
+}

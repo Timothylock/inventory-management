@@ -157,6 +157,7 @@ func (m *MySQL) addLog(uID int, objID, action, details string) error {
 	return err
 }
 
+type MultiUserDB []UserDB
 type UserDB struct {
 	ID         int    `db:"ID"`
 	IsSysAdmin int    `db:"ISSYSADMIN"`
@@ -220,4 +221,29 @@ func (m *MySQL) GetUserByToken(token string) (users.User, error) {
 	user.Username = userdb.Username
 
 	return user, err
+}
+
+// GetUsers gets all the active users
+func (m *MySQL) GetUsers() (users.MultipleUsers, error) {
+	dl := MultiUserDB{}
+	err := m.conn.Select(
+		&dl,
+		"SELECT ID, ISSYSADMIN, EMAIL, TOKEN, USERNAME FROM users WHERE ACTIVE = 1",
+	)
+
+	ret := users.MultipleUsers{}
+
+	for _, u := range dl {
+		ret = append(ret, users.User{
+			Valid:      true,
+			ID:         u.ID,
+			IsSysAdmin: u.IsSysAdmin == 1,
+			Email:      u.Email,
+			Token:      u.Token,
+			Username:   u.Username,
+		})
+
+	}
+
+	return ret, err
 }
