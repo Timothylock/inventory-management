@@ -111,9 +111,18 @@
 <script>
     var curURL = window.location;
     var baseURL = curURL .protocol + "//" + curURL.host;
-    var androidScanURL = "http://zxing.appspot.com/scan?ret=" + baseURL + "/add_item.html?barcode={CODE}";
 
-    $("#scanItem").attr("href", androidScanURL);
+    // Set scanner links
+    var androidScanURL = "http://zxing.appspot.com/scan?ret=" + baseURL + "/add_item.html?barcode={CODE}";
+    var iosScanURL = "/scan.html?next=" + baseURL + "/add_item.html?barcode={CODE}";
+
+    var ua = navigator.userAgent.toLowerCase();
+    var isAndroid = ua.indexOf("android") > -1; //&& ua.indexOf("mobile");
+    if(isAndroid) {
+        $("#scanItem").attr("href", androidScanURL);
+    } else {
+        $("#scanItem").attr("href", iosScanURL);
+    }
 
     function qs(key) {
         key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
