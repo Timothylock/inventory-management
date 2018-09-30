@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta content='width=device-width, initial-scale=0.65, maximum-scale=0.65, user-scalable=0' name='viewport'/>
+    <title>Admin - Users</title>
+
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="./users.js"></script>
+
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+
+</head>
+<body>
+
+<div class="container">
+    <div class="mt-1">
+        <!-- Main Page -->
+        <h1>Users</h1>
+        <button onclick='window.location.href = "addUser.html";' type='button' class='btn btn-success'>Add new user</button>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Admin</th>
+                <th>Operations</th>
+            </tr>
+            </thead>
+            <tbody id="logbody">
+            <tr>
+                <td>Loading</td>
+                <td>Loading</td>
+                <td>Loading</td>
+                <td>Loading</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    window.onload = getUsers();
+</script>
+
+</body>
+</html>
+    
+

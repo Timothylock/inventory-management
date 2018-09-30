@@ -485,3 +485,55 @@ func TestGetUserErr(t *testing.T) {
 	assert.Error(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestGetUsersSuccess(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN", "USERNAME"})
+	rows.AddRow(123, 1, "foo@bar.com", "someToken", "someUser")
+	rows.AddRow(124, 0, "foo2@bar.com", "someToken2", "someUser2")
+
+	mock.ExpectQuery(GetUser).
+		WillReturnRows(rows)
+
+	expectedUsers := users.MultipleUsers{
+		{
+			Valid:      true,
+			ID:         123,
+			Token:      "someToken",
+			Username:   "someUser",
+			IsSysAdmin: true,
+			Email:      "foo@bar.com",
+		},
+		{
+			Valid:      true,
+			ID:         124,
+			Token:      "someToken2",
+			Username:   "someUser2",
+			IsSysAdmin: false,
+			Email:      "foo2@bar.com",
+		},
+	}
+	expectedUserJson, err := json.Marshal(expectedUsers)
+	assert.NoError(t, err)
+
+	u, err := db.GetUsers()
+	assert.NoError(t, err)
+	uJson, err := json.Marshal(u)
+
+	assert.JSONEq(t, string(expectedUserJson), string(uJson))
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetUsersErr(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectQuery(GetUser).
+		WillReturnError(errors.New("error"))
+
+	_, err := db.GetUsers()
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
