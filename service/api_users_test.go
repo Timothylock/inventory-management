@@ -171,7 +171,7 @@ func TestGetUsers(t *testing.T) {
 					},
 				}
 
-				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true}, nil).AnyTimes()
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true}, nil).AnyTimes()
 				up.EXPECT().GetUsers().Return(u, nil)
 			},
 			expectCode: 200,
