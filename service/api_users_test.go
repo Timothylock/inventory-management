@@ -160,6 +160,13 @@ func TestGetUsers(t *testing.T) {
 			expectCode: 401,
 		},
 		{
+			testName: "Not Sys Admin",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: false}, nil).AnyTimes()
+			},
+			expectCode: 401,
+		},
+		{
 			testName: "Success",
 			setMock: func(up *users.MockPersister) {
 				u := users.MultipleUsers{
@@ -175,6 +182,31 @@ func TestGetUsers(t *testing.T) {
 				up.EXPECT().GetUsers().Return(u, nil)
 			},
 			expectCode: 200,
+			expectedResponse: users.MultipleUsers{
+				{
+					ID: 123,
+				},
+				{
+					ID: 126,
+				},
+			},
+		},
+		{
+			testName: "Success",
+			setMock: func(up *users.MockPersister) {
+				u := users.MultipleUsers{
+					{
+						ID: 123,
+					},
+					{
+						ID: 126,
+					},
+				}
+
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true}, nil).AnyTimes()
+				up.EXPECT().GetUsers().Return(u, errors.New("shoot"))
+			},
+			expectCode: 500,
 			expectedResponse: users.MultipleUsers{
 				{
 					ID: 123,
