@@ -58,3 +58,16 @@ func (m *MockPersister) GetUserByToken(token string) (User, error) {
 func (mr *MockPersisterMockRecorder) GetUserByToken(token interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByToken", reflect.TypeOf((*MockPersister)(nil).GetUserByToken), token)
 }
+
+// GetUsers mocks base method
+func (m *MockPersister) GetUsers() (MultipleUsers, error) {
+	ret := m.ctrl.Call(m, "GetUsers")
+	ret0, _ := ret[0].(MultipleUsers)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsers indicates an expected call of GetUsers
+func (mr *MockPersisterMockRecorder) GetUsers() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockPersister)(nil).GetUsers))
+}

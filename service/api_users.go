@@ -50,6 +50,11 @@ func (a *API) LoginCheck(u users.User) http.Handler {
 
 func (a *API) FetchUsers(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !u.IsSysAdmin {
+			responses.SendError(w, responses.Unauthorized(errors.New("only admins can do a lookup of users")))
+			return
+		}
+
 		us, err := a.userService.GetUsers()
 		if err != nil {
 			responses.SendError(w, responses.InternalError(err))
