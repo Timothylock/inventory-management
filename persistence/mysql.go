@@ -221,3 +221,17 @@ func (m *MySQL) GetUserByToken(token string) (users.User, error) {
 
 	return user, err
 }
+
+// AddUser adds a new user or updates and existing one
+func (m *MySQL) AddUser(username, email, password string, isSysAdmin bool) error {
+	hasher := sha1.New()
+	hasher.Write([]byte(password))
+	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
+	_, err := m.conn.Exec(
+		`INSERT INTO users (USERNAME, EMAIL, TOKEN, ISSYSADMIN)`,
+		username, email, sha, isSysAdmin,
+	)
+
+	return err
+}
