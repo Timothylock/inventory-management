@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"testing"
@@ -137,6 +138,106 @@ func TestLoginCheck(t *testing.T) {
 			resp, err := sendGet(server.URL + "/api/user/logincheck")
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectCode, resp.StatusCode)
+		})
+	}
+}
+
+func TestGetUsers(t *testing.T) {
+	type testCase struct {
+		testName         string
+		setMock          func(up *users.MockPersister)
+		sendBody         LoginBody
+		expectCode       int
+		expectedResponse users.MultipleUsers
+	}
+
+	testCases := []testCase{
+		{
+			testName: "bad login",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: false}, nil).AnyTimes()
+			},
+			expectCode: 401,
+		},
+		{
+			testName: "Not Sys Admin",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: false}, nil).AnyTimes()
+			},
+			expectCode: 401,
+		},
+		{
+			testName: "Success",
+			setMock: func(up *users.MockPersister) {
+				u := users.MultipleUsers{
+					{
+						ID: 123,
+					},
+					{
+						ID: 126,
+					},
+				}
+
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true}, nil).AnyTimes()
+				up.EXPECT().GetUsers().Return(u, nil)
+			},
+			expectCode: 200,
+			expectedResponse: users.MultipleUsers{
+				{
+					ID: 123,
+				},
+				{
+					ID: 126,
+				},
+			},
+		},
+		{
+			testName: "Success",
+			setMock: func(up *users.MockPersister) {
+				u := users.MultipleUsers{
+					{
+						ID: 123,
+					},
+					{
+						ID: 126,
+					},
+				}
+
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true}, nil).AnyTimes()
+				up.EXPECT().GetUsers().Return(u, errors.New("shoot"))
+			},
+			expectCode: 500,
+			expectedResponse: users.MultipleUsers{
+				{
+					ID: 123,
+				},
+				{
+					ID: 126,
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			up := users.NewMockPersister(mc)
+			tc.setMock(up)
+
+			server := setupServer(nil, up, t)
+			defer server.Close()
+
+			resp, err := sendGet(server.URL + "/api/users")
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectCode, resp.StatusCode)
+
+			if tc.expectCode == 200 {
+				b, err := json.Marshal(tc.expectedResponse)
+				assert.NoError(t, err)
+				assert.JSONEq(t, string(b), string(getBody(t, resp)))
+			}
 		})
 	}
 }
