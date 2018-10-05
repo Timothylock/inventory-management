@@ -53,6 +53,7 @@ func (a *API) AddUser(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !u.IsSysAdmin {
 			responses.SendError(w, responses.Unauthorized(errors.New("you are not authorized to perform this action")))
+			return
 		}
 
 		ad := UserBody{}
@@ -67,7 +68,7 @@ func (a *API) AddUser(u users.User) http.Handler {
 			return
 		}
 
-		fmt.Fprint(w, "OK")
+		sendJSONorErr("Success", w)
 	})
 }
 

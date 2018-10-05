@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta content='width=device-width, initial-scale=0.65, maximum-scale=0.65, user-scalable=0' name='viewport'/>
+    <title>Admin - New User</title>
+
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="./users.js"></script>
+
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+
+</head>
+<body>
+
+<!-- Main Page -->
+<form class="form-horizontal">
+    <fieldset>
+
+        <!-- Form Name -->
+        <h1>Add/Edit User</h1>
+
+        <!-- Text input-->
+        <div class="form-group">
+            <label class="col-md-4 control-label" for="username">Username (no spaces)</label>
+            <div class="col-md-5">
+                <input id="username" name="username" type="text" placeholder="" class="form-control input-md"
+                       required="">
+
+            </div>
+        </div>
+
+        <!-- Text input-->
+        <div class="form-group">
+            <label class="col-md-4 control-label" for="email">Email</label>
+            <div class="col-md-5">
+                <input id="email" name="email" type="email" placeholder="" class="form-control input-md">
+
+            </div>
+        </div>
+
+        <!-- Password input-->
+        <div class="form-group">
+            <label class="col-md-4 control-label" for="password">Password</label>
+            <div class="col-md-5">
+                <input id="password" name="password" type="password" placeholder=""
+                       class="form-control input-md"
+                       required="">
+
+            </div>
+        </div>
+
+        <!-- Select Basic -->
+        <div class="form-group">
+            <label class="col-md-4 control-label" for="accesslevel">Access Level</label>
+            <div class="col-md-5">
+                <select id="accesslevel" name="accesslevel" class="form-control">
+                    <option value="false">Normal User</option>
+                    <option value="true">Administrator (access to admin section)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Button -->
+        <div class="form-group">
+            <div class="col-md-4">
+                <button onclick="submitUser()" class="btn btn-primary">
+                    Submit
+                </button>
+            </div>
+        </div>
+    </fieldset>
+
+    <button onclick="submitUser()" class="btn btn-primary">
+        Submit
+    </button>
+</body>
+</html>
