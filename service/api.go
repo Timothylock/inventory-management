@@ -45,12 +45,10 @@ func NewRouter(api *API, cfg config.Config) http.Handler {
 	router.Handler("GET", "/api/lookup", middleware.UserRequired(api.userService, api.LookupBarcode))
 
 	// User
-	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.userService, api.NotImplemented))
-	router.Handler("POST", "/api/user", middleware.UserRequired(api.userService, api.NotImplemented))
 	router.Handler("GET", "/api/users", middleware.UserRequired(api.userService, api.FetchUsers))
 	router.Handler("POST", "/api/user/login", api.Login())
 	router.Handler("GET", "/api/user/logincheck", middleware.UserRequired(api.userService, api.LoginCheck))
-	router.Handler("DELETE", "/api/user/logout", middleware.UserOptional(api.userService, api.NotImplemented))
+	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.userService, api.AddUser))
 
 	// Frontend
 	mux := http.NewServeMux()
@@ -58,12 +56,6 @@ func NewRouter(api *API, cfg config.Config) http.Handler {
 	mux.Handle("/api/", router)
 
 	return mux
-}
-
-func (a *API) NotImplemented(u users.User) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Not yet implemented\n")
-	})
 }
 
 func getOptionalParam(r *http.Request, name string) string {

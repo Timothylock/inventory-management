@@ -241,3 +241,86 @@ func TestGetUsers(t *testing.T) {
 		})
 	}
 }
+
+func TestAddUser(t *testing.T) {
+	type testCase struct {
+		testName   string
+		setMock    func(up *users.MockPersister)
+		sendBody   UserBody
+		expectCode int
+	}
+
+	sb := UserBody{
+		Username:   "someuser",
+		Password:   "somepassword",
+		Email:      "someEmail",
+		IsSysAdmin: "true",
+	}
+
+	testCases := []testCase{
+		{
+			testName: "success",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true}, nil).AnyTimes()
+				up.EXPECT().AddUser("someuser", "someEmail", "somepassword", true).Return(nil)
+			},
+			sendBody:   sb,
+			expectCode: 200,
+		},
+		{
+			testName: "not sysadmin",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: false}, nil).AnyTimes()
+			},
+			sendBody:   sb,
+			expectCode: 401,
+		},
+		{
+			testName: "not logged in",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: false, IsSysAdmin: false}, nil).AnyTimes()
+			},
+			sendBody:   sb,
+			expectCode: 401,
+		},
+		{
+			testName: "internal error",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true}, nil).AnyTimes()
+				up.EXPECT().AddUser("someuser", "someEmail", "somepassword", true).Return(errors.New("sorry"))
+			},
+			sendBody:   sb,
+			expectCode: 500,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			up := users.NewMockPersister(mc)
+			tc.setMock(up)
+
+			server := setupServer(nil, up, t)
+			defer server.Close()
+
+			resp, err := sendPost(server.URL+"/api/user/add", tc.sendBody)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectCode, resp.StatusCode)
+		})
+	}
+}
+
+func TestAddUserBadBody(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	ip := items.NewMockPersister(mc)
+	server := setupServerAuthenticated(ip, t)
+	defer server.Close()
+
+	resp, err := sendPost(server.URL+"/api/user/add", `{"username": 123}`)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+}

@@ -9,7 +9,7 @@ function getUsers() {
                     if (response[i].username === "System") {
                         result += "<tr><td>" + response[i].username + "</td><td>" + response[i].email + "</td><td>" + response[i].isSysAdmin + "</td><td><button type='button' class='btn btn-primary' disabled>Edit</button> <button type='button' class='btn btn-danger' disabled>Delete</button></td></tr>"
                     } else {
-                        result += "<tr><td>" + response[i].username + "</td><td>" + response[i].email + "</td><td>" + response[i].isSysAdmin + "</td><td><button onclick='editUser(\"" + response[i].username + "\",\"" + response[i].real_name + "\",\"" + response[i].access_level + "\")' type='button' class='btn btn-primary'>Edit</button> <button onclick='deleteUser(\"" + response[i].username + "\")' type='button' class='btn btn-danger'>Delete</button></td></tr>"
+                        result += "<tr><td>" + response[i].username + "</td><td>" + response[i].email + "</td><td>" + response[i].isSysAdmin + "</td><td><button onclick='editUser(\"" + response[i].username + "\",\"" + response[i].real_name + "\",\"" + response[i].access_level + "\")' type='button' class='btn btn-primary' disabled>Edit</button> <button onclick='deleteUser(\"" + response[i].username + "\")' type='button' class='btn btn-danger' disabled>Delete</button></td></tr>"
                     }
                 })(i);
             }
@@ -45,22 +45,25 @@ function editUser(username, realname, accesslevel) {
 function submitUser() {
     var username = $('#username').val();
     var password = $('#password').val();
-    var realname = $('#fullname').val();
+    var email = $('#email').val();
     var accesslevel = $('#accesslevel').val();
 
-    console.log(JSON.stringify({username: username, password: password, realName: realname, accessLevel: accesslevel}));
+    console.log("about to submit");
+
+    console.log(JSON.stringify({username: username, password: password, email: email, isSysAdmin: accesslevel}));
     $.ajax({
-        url: '/api/admin/users',
+        url: '/api/user/add',
         type: 'POST',
         dataType: 'json',
         contentType: 'application/json',
-        data: JSON.stringify({username: username, password: password, realName: realname, accessLevel: accesslevel}),
+        data: JSON.stringify({username: username, password: password, email: email, isSysAdmin: accesslevel}),
         success: function () {
             alert("User " + username + " added/changed");
             window.location.href = "users.html";
         },
         error: function (response) {
-            alert("Could not add " + username + ". " + response.responseText);
+            alert(response.responseText);
+            window.location.href = "users.html";
         }
     });
 }

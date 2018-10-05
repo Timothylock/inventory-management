@@ -59,6 +59,18 @@ func (mr *MockPersisterMockRecorder) GetUserByToken(token interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByToken", reflect.TypeOf((*MockPersister)(nil).GetUserByToken), token)
 }
 
+// AddUser mocks base method
+func (m *MockPersister) AddUser(username, email, password string, isSysAdmin bool) error {
+	ret := m.ctrl.Call(m, "AddUser", username, email, password, isSysAdmin)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddUser indicates an expected call of AddUser
+func (mr *MockPersisterMockRecorder) AddUser(username, email, password, isSysAdmin interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockPersister)(nil).AddUser), username, email, password, isSysAdmin)
+}
+
 // GetUsers mocks base method
 func (m *MockPersister) GetUsers() (MultipleUsers, error) {
 	ret := m.ctrl.Call(m, "GetUsers")

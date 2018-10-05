@@ -42,6 +42,36 @@ func (a *API) Login() http.Handler {
 	})
 }
 
+type UserBody struct {
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+	Email      string `json:"email"`
+	IsSysAdmin string `json:"is_sys_admin"`
+}
+
+func (a *API) AddUser(u users.User) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !u.IsSysAdmin {
+			responses.SendError(w, responses.Unauthorized(errors.New("you are not authorized to perform this action")))
+			return
+		}
+
+		ad := UserBody{}
+		err := parseBody(r, &ad)
+		if err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		if err = a.userService.AddUser(ad.Username, ad.Email, ad.Password, ad.IsSysAdmin == "true"); err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		sendJSONorErr("Success", w)
+	})
+}
+
 func (a *API) LoginCheck(u users.User) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "OK")

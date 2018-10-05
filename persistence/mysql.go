@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"crypto/rand"
 	"crypto/sha1"
 	"database/sql"
 	"encoding/base64"
@@ -221,6 +222,27 @@ func (m *MySQL) GetUserByToken(token string) (users.User, error) {
 	user.Username = userdb.Username
 
 	return user, err
+}
+
+// AddUser adds a new user or updates and existing one
+func (m *MySQL) AddUser(username, email, password string, isSysAdmin bool) error {
+	hasher := sha1.New()
+	hasher.Write([]byte(password))
+	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	token := generateToken()
+
+	_, err := m.conn.Exec(
+		`INSERT INTO users (USERNAME, EMAIL, PASSWORD, TOKEN, ISSYSADMIN) VALUES (?, ?, ?, ?, ?)`,
+		username, email, sha, token, isSysAdmin,
+	)
+
+	return err
+}
+
+func generateToken() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
 }
 
 // GetUsers gets all the active users

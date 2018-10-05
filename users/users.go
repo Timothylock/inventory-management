@@ -3,6 +3,7 @@ package users
 type Persister interface {
 	GetUser(username, password string) (User, error)
 	GetUserByToken(token string) (User, error)
+	AddUser(username, email, password string, isSysAdmin bool) error
 	GetUsers() (MultipleUsers, error)
 }
 
@@ -32,6 +33,10 @@ func (s *Service) CheckUser(username, password string) (User, error) {
 
 func (s *Service) CheckUserByToken(token string) (User, error) {
 	return s.persister.GetUserByToken(token)
+}
+
+func (s *Service) AddUser(username, email, password string, isSysAdmin bool) error {
+	return s.persister.AddUser(username, email, password, isSysAdmin)
 }
 
 func (s *Service) GetUsers() (MultipleUsers, error) {

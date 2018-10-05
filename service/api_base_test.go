@@ -22,7 +22,7 @@ func setupServerAuthenticated(ip items.Persister, t *testing.T) *httptest.Server
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 	up := users.NewMockPersister(mc)
-	up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, ID: 123}, nil).AnyTimes()
+	up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, ID: 123, IsSysAdmin: true}, nil).AnyTimes()
 
 	is := items.NewService(ip)
 	us := upc.NewService(cfg)
@@ -110,17 +110,4 @@ func (errReader) Read(p []byte) (n int, err error) {
 func TestParseBodyFail(t *testing.T) {
 	testRequest := httptest.NewRequest(http.MethodPost, "/", errReader(0))
 	assert.Error(t, parseBody(testRequest, nil))
-}
-
-func TestNotImplemented(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	ip := items.NewMockPersister(mc)
-	server := setupServerAuthenticated(ip, t)
-	defer server.Close()
-
-	resp, err := sendPost(server.URL+"/api/user/add", "")
-	assert.NoError(t, err)
-	assert.Equal(t, "Not yet implemented\n", getBody(t, resp))
 }
