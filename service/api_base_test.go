@@ -111,16 +111,3 @@ func TestParseBodyFail(t *testing.T) {
 	testRequest := httptest.NewRequest(http.MethodPost, "/", errReader(0))
 	assert.Error(t, parseBody(testRequest, nil))
 }
-
-func TestNotImplemented(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	ip := items.NewMockPersister(mc)
-	server := setupServerAuthenticated(ip, t)
-	defer server.Close()
-
-	resp, err := sendPost(server.URL+"/api/user/add", "")
-	assert.NoError(t, err)
-	assert.Equal(t, "Not yet implemented\n", getBody(t, resp))
-}
