@@ -22,7 +22,7 @@ func setupServerAuthenticated(ip items.Persister, t *testing.T) *httptest.Server
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 	up := users.NewMockPersister(mc)
-	up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, ID: 123}, nil).AnyTimes()
+	up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, ID: 123, IsSysAdmin: true}, nil).AnyTimes()
 
 	is := items.NewService(ip)
 	us := upc.NewService(cfg)
