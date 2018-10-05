@@ -48,15 +48,12 @@ function submitUser() {
     var email = $('#email').val();
     var accesslevel = $('#accesslevel').val();
 
-    console.log("about to submit");
-
-    console.log(JSON.stringify({username: username, password: password, email: email, isSysAdmin: accesslevel}));
     $.ajax({
         url: '/api/user/add',
         type: 'POST',
         dataType: 'json',
         contentType: 'application/json',
-        data: JSON.stringify({username: username, password: password, email: email, isSysAdmin: accesslevel}),
+        data: JSON.stringify({username: username, password: password, email: email, is_sys_admin: accesslevel}),
         success: function () {
             alert("User " + username + " added/changed");
             window.location.href = "users.html";
