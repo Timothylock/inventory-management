@@ -240,7 +240,7 @@ func (m *MySQL) AddUser(username, email, password string, isSysAdmin bool) error
 }
 
 func generateToken() string {
-	b := make([]byte, 4)
+	b := make([]byte, 16)
 	rand.Read(b)
 	return fmt.Sprintf("%x", b)
 }

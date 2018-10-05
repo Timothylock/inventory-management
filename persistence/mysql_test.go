@@ -20,6 +20,7 @@ const (
 	deleteItem       = `UPDATE items SET DELETED=1.+`
 	GetUser          = `SELECT ID\, ISSYSADMIN\, EMAIL\, TOKEN\, USERNAME FROM users.+`
 	addItem          = `INSERT INTO items`
+	addUser          = `INSERT INTO users.+`
 	addItemOverwrite = `UPDATE items.+`
 	searchItems      = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
 )
@@ -535,5 +536,18 @@ func TestGetUsersErr(t *testing.T) {
 
 	_, err := db.GetUsers()
 	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAddUserSuccess(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectExec(addUser).
+		WithArgs("user", "email", "W6ph5Mm5Pz8GgiULbPgzG37mj9g=", sqlmock.AnyArg(), true).
+		WillReturnResult(sqlmock.NewResult(123, 1))
+
+	err := db.AddUser("user", "email", "password", true)
+	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
