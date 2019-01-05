@@ -198,6 +198,35 @@ func (m *MySQL) GetUser(username, password string) (users.User, error) {
 	return user, err
 }
 
+// GetUserByUsername returns the user given the username. To be used internally or by admins only!
+func (m *MySQL) GetUserByUsername(username string, curUserID int) (users.User, error) {
+	var user users.User
+	user.Valid = false
+
+	var userdb UserDB
+	err := m.conn.Get(
+		&userdb,
+		"SELECT ID, ISSYSADMIN, EMAIL, TOKEN, USERNAME FROM users WHERE USERNAME = ? AND ACTIVE = 1",
+		username,
+	)
+	if err == sql.ErrNoRows {
+		return user, nil
+	} else if err != nil {
+		return user, err
+	}
+
+	user.Valid = true
+	user.ID = userdb.ID
+	user.IsSysAdmin = userdb.IsSysAdmin == 1
+	user.Email = userdb.Email
+	user.Token = userdb.Token
+	user.Username = userdb.Username
+
+	m.addLog(user.ID, strconv.Itoa(curUserID), "getUserByUsername", "OBJECTID is userID in this case. Queried user by username")
+
+	return user, err
+}
+
 // GetUserByToken returns the user by token
 func (m *MySQL) GetUserByToken(token string) (users.User, error) {
 	var user users.User
@@ -240,8 +269,8 @@ func (m *MySQL) AddUser(username, email, password string, isSysAdmin bool) error
 }
 
 func (m *MySQL) DeleteUser(targetID, userID int) error {
-	r, err := m.conn.Exec(`UPDATE users SET ACTIVE=0, LAST_PERFORMED_BY=? WHERE ID=?`,
-		userID, targetID,
+	r, err := m.conn.Exec(`UPDATE users SET ACTIVE=0 WHERE ID=?`,
+		targetID,
 	)
 	if err != nil {
 		return err
