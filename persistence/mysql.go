@@ -58,10 +58,10 @@ func (m *MySQL) SearchItems(search string) (items.ItemDetailList, error) {
 		&dl,
 		`SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM
 		(
-		SELECT * FROM items WHERE MATCH (ID, NAME, CATEGORY, DETAILS, LOCATION) AGAINST (? IN NATURAL LANGUAGE MODE) AND DELETED=0
+		SELECT * FROM items WHERE (MATCH (ID, NAME, CATEGORY, DETAILS, LOCATION) AGAINST (? IN NATURAL LANGUAGE MODE) AND DELETED=0) OR (ID = ? AND DELETED=0)
 		) AS search
 		JOIN users ON search.LAST_PERFORMED_BY = users.ID`,
-		search,
+		search, search,
 	)
 
 	return dl, err

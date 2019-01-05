@@ -241,7 +241,7 @@ func TestSearchItems(t *testing.T) {
 			tc.addRows(rows)
 
 			mock.ExpectQuery(searchItems).
-				WithArgs("foo").
+				WithArgs("foo", "foo").
 				WillReturnRows(rows)
 
 			r, err := db.SearchItems("foo")
