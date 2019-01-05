@@ -23,6 +23,7 @@ const (
 	addUser          = `INSERT INTO users.+`
 	addItemOverwrite = `UPDATE items.+`
 	searchItems      = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
+	deleteUser       = `UPDATE users SET ACTIVE=0.+`
 )
 
 func newTestDB(t *testing.T) (*MySQL, sqlmock.Sqlmock) {
@@ -548,6 +549,45 @@ func TestAddUserSuccess(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(123, 1))
 
 	err := db.AddUser("user", "email", "password", true)
+	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteUserInternalErr(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectExec(deleteUser).
+		WithArgs(123, 1234).
+		WillReturnError(errors.New("sorry"))
+
+	err := db.DeleteUser(1234, 123)
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteUserNoRowsAff(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectExec(deleteUser).
+		WithArgs(123, 1234).
+		WillReturnResult(sqlmock.NewResult(1, 0))
+
+	err := db.DeleteUser(1234, 123)
+	assert.Equal(t, items.ItemNotFoundErr, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteUserSuccess(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectExec(deleteUser).
+		WithArgs(123, 1234).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err := db.DeleteUser(1234, 123)
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

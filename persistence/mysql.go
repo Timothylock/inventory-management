@@ -239,6 +239,28 @@ func (m *MySQL) AddUser(username, email, password string, isSysAdmin bool) error
 	return err
 }
 
+func (m *MySQL) DeleteUser(targetID, userID int) error {
+	r, err := m.conn.Exec(`UPDATE users SET ACTIVE=0, LAST_PERFORMED_BY=? WHERE ID=?`,
+		userID, targetID,
+	)
+	if err != nil {
+		return err
+	}
+
+	ra, err := r.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if ra <= 0 {
+		return items.ItemNotFoundErr
+	}
+
+	m.addLog(userID, strconv.Itoa(targetID), "delete user", "OBJECTID is userID in this case")
+
+	return err
+}
+
 func generateToken() string {
 	b := make([]byte, 16)
 	rand.Read(b)
