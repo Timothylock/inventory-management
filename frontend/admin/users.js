@@ -9,7 +9,7 @@ function getUsers() {
                     if (response[i].username === "System") {
                         result += "<tr><td>" + response[i].username + "</td><td>" + response[i].email + "</td><td>" + response[i].isSysAdmin + "</td><td><button type='button' class='btn btn-primary' disabled>Edit</button> <button type='button' class='btn btn-danger' disabled>Delete</button></td></tr>"
                     } else {
-                        result += "<tr><td>" + response[i].username + "</td><td>" + response[i].email + "</td><td>" + response[i].isSysAdmin + "</td><td><button onclick='editUser(\"" + response[i].username + "\",\"" + response[i].real_name + "\",\"" + response[i].access_level + "\")' type='button' class='btn btn-primary' disabled>Edit</button> <button onclick='deleteUser(\"" + response[i].username + "\")' type='button' class='btn btn-danger' disabled>Delete</button></td></tr>"
+                        result += "<tr><td>" + response[i].username + "</td><td>" + response[i].email + "</td><td>" + response[i].isSysAdmin + "</td><td><button onclick='editUser(\"" + response[i].username + "\",\"" + response[i].real_name + "\",\"" + response[i].access_level + "\")' type='button' class='btn btn-primary' disabled>Edit</button> <button onclick='deleteUser(\"" + response[i].username + "\")' type='button' class='btn btn-danger'>Delete</button></td></tr>"
                     }
                 })(i);
             }
@@ -25,7 +25,7 @@ function getUsers() {
 function deleteUser(username) {
     if (confirm("You're about to delete " + username + ". This cannot be undone and will be logged! Do you want to proceed?")) {
         $.ajax({
-            url: '/api/admin/users?username=' + username,
+            url: '/api/user/delete?u=' + username,
             type: 'DELETE',
             success: function () {
                 getUsers();
