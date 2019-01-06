@@ -1,10 +1,16 @@
 package users
 
+import (
+	"errors"
+)
+
 type Persister interface {
 	GetUser(username, password string) (User, error)
 	GetUserByToken(token string) (User, error)
+	GetUserByUsername(username string, curUserID int) (User, error)
 	AddUser(username, email, password string, isSysAdmin bool) error
 	GetUsers() (MultipleUsers, error)
+	DeleteUser(targetID, userID int) error
 }
 
 type MultipleUsers []User
@@ -41,4 +47,21 @@ func (s *Service) AddUser(username, email, password string, isSysAdmin bool) err
 
 func (s *Service) GetUsers() (MultipleUsers, error) {
 	return s.persister.GetUsers()
+}
+
+func (s *Service) DeleteUser(targetUsername string, curUserID int) error {
+	targetU, err := s.persister.GetUserByUsername(targetUsername, curUserID)
+	if err != nil {
+		return err
+	}
+
+	if !targetU.Valid {
+		return errors.New("username not found or already deleted")
+	}
+
+	if targetU.ID == 0 {
+		return errors.New("cannot delete the system user")
+	}
+
+	return s.persister.DeleteUser(targetU.ID, curUserID)
 }

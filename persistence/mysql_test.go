@@ -23,6 +23,7 @@ const (
 	addUser          = `INSERT INTO users.+`
 	addItemOverwrite = `UPDATE items.+`
 	searchItems      = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
+	deleteUser       = `UPDATE users SET ACTIVE=0.+`
 )
 
 func newTestDB(t *testing.T) (*MySQL, sqlmock.Sqlmock) {
@@ -487,6 +488,73 @@ func TestGetUserErr(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+func TestGetUserByUsernameSuccess(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN", "USERNAME"})
+	rows.AddRow(123, 1, "foo@bar.com", "someToken", "someUser")
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("someUser").
+		WillReturnRows(rows)
+
+	expectedUser := users.User{
+		Valid:      true,
+		ID:         123,
+		Token:      "someToken",
+		Username:   "someUser",
+		IsSysAdmin: true,
+		Email:      "foo@bar.com",
+	}
+	expectedUserJson, err := json.Marshal(expectedUser)
+	assert.NoError(t, err)
+
+	u, err := db.GetUserByUsername("someUser", 123)
+	assert.NoError(t, err)
+	uJson, err := json.Marshal(u)
+
+	assert.JSONEq(t, string(expectedUserJson), string(uJson))
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetUserByUsernameNotFound(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN"})
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("user").
+		WillReturnRows(rows)
+
+	expectedUser := users.User{
+		Valid: false,
+	}
+	expectedUserJson, err := json.Marshal(expectedUser)
+	assert.NoError(t, err)
+
+	u, err := db.GetUserByUsername("user", 123)
+	assert.NoError(t, err)
+	uJson, err := json.Marshal(u)
+
+	assert.JSONEq(t, string(expectedUserJson), string(uJson))
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetUserByUsernameErr(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("user").
+		WillReturnError(errors.New("error"))
+
+	_, err := db.GetUserByUsername("user", 123)
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
 func TestGetUsersSuccess(t *testing.T) {
 	db, mock := newTestDB(t)
 	defer db.conn.Close()
@@ -548,6 +616,45 @@ func TestAddUserSuccess(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(123, 1))
 
 	err := db.AddUser("user", "email", "password", true)
+	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteUserInternalErr(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectExec(deleteUser).
+		WithArgs(1234).
+		WillReturnError(errors.New("sorry"))
+
+	err := db.DeleteUser(1234, 123)
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteUserNoRowsAff(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectExec(deleteUser).
+		WithArgs(1234).
+		WillReturnResult(sqlmock.NewResult(1, 0))
+
+	err := db.DeleteUser(1234, 123)
+	assert.Equal(t, items.ItemNotFoundErr, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteUserSuccess(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectExec(deleteUser).
+		WithArgs(1234).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err := db.DeleteUser(1234, 123)
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

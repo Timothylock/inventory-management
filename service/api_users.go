@@ -94,3 +94,25 @@ func (a *API) FetchUsers(u users.User) http.Handler {
 		sendJSONorErr(us, w)
 	})
 }
+
+func (a *API) DeleteUser(u users.User) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !u.IsSysAdmin {
+			responses.SendError(w, responses.Unauthorized(errors.New("you are not authorized to perform this action")))
+			return
+		}
+
+		uname, err := getRequiredParam(r, "u")
+		if err != nil {
+			responses.SendError(w, responses.MissingParamError("u"))
+			return
+		}
+
+		if err = a.userService.DeleteUser(uname, u.ID); err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		sendJSONorErr("Success", w)
+	})
+}
