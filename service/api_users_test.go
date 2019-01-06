@@ -324,3 +324,86 @@ func TestAddUserBadBody(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 }
+
+func TestDeleteUser(t *testing.T) {
+	type testCase struct {
+		testName   string
+		setMock    func(up *users.MockPersister)
+		uHeader    string
+		expectCode int
+	}
+
+	testCases := []testCase{
+		{
+			testName: "success",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true, ID: 12345}, nil).AnyTimes()
+				up.EXPECT().GetUserByUsername("someuser", 12345).Return(users.User{ID: 123, Valid: true}, nil)
+				up.EXPECT().DeleteUser(123, 12345).Return(nil)
+			},
+			uHeader:    "u=someuser",
+			expectCode: 200,
+		},
+		{
+			testName: "not sys admin",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: false, ID: 12345}, nil).AnyTimes()
+			},
+			uHeader:    "u=someuser",
+			expectCode: 401,
+		},
+		{
+			testName: "missing user",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true, ID: 12345}, nil).AnyTimes()
+			},
+			uHeader:    "",
+			expectCode: 400,
+		},
+		{
+			testName: "cannot get user from username",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true, ID: 12345}, nil).AnyTimes()
+				up.EXPECT().GetUserByUsername("someuser", 12345).Return(users.User{}, errors.New("some error"))
+			},
+			uHeader:    "u=someuser",
+			expectCode: 500,
+		},
+		{
+			testName: "user is system",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true, ID: 12345}, nil).AnyTimes()
+				up.EXPECT().GetUserByUsername("someuser", 12345).Return(users.User{ID: 0, Valid: true}, nil)
+			},
+			uHeader:    "u=someuser",
+			expectCode: 500,
+		},
+		{
+			testName: "error",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true, ID: 12345}, nil).AnyTimes()
+				up.EXPECT().GetUserByUsername("someuser", 12345).Return(users.User{ID: 123, Valid: true}, nil)
+				up.EXPECT().DeleteUser(123, 12345).Return(errors.New("some error"))
+			},
+			uHeader:    "u=someuser",
+			expectCode: 500,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			up := users.NewMockPersister(mc)
+			tc.setMock(up)
+
+			server := setupServer(nil, up, t)
+			defer server.Close()
+
+			resp, err := sendDelete(server.URL + "/api/user/delete?" + tc.uHeader)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectCode, resp.StatusCode)
+		})
+	}
+}

@@ -54,8 +54,13 @@ func (s *Service) DeleteUser(targetUsername string, curUserID int) error {
 	if err != nil {
 		return err
 	}
+
+	if !targetU.Valid {
+		return errors.New("username not found or already deleted")
+	}
+
 	if targetU.ID == 0 {
-		return errors.New("username not found, already deleted, or you tried deleting the system user")
+		return errors.New("cannot delete the system user")
 	}
 
 	return s.persister.DeleteUser(targetU.ID, curUserID)
