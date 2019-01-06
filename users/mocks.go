@@ -59,6 +59,19 @@ func (mr *MockPersisterMockRecorder) GetUserByToken(token interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByToken", reflect.TypeOf((*MockPersister)(nil).GetUserByToken), token)
 }
 
+// GetUserByUsername mocks base method
+func (m *MockPersister) GetUserByUsername(username string, curUserID int) (User, error) {
+	ret := m.ctrl.Call(m, "GetUserByUsername", username, curUserID)
+	ret0, _ := ret[0].(User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByUsername indicates an expected call of GetUserByUsername
+func (mr *MockPersisterMockRecorder) GetUserByUsername(username, curUserID interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockPersister)(nil).GetUserByUsername), username, curUserID)
+}
+
 // AddUser mocks base method
 func (m *MockPersister) AddUser(username, email, password string, isSysAdmin bool) error {
 	ret := m.ctrl.Call(m, "AddUser", username, email, password, isSysAdmin)
@@ -82,4 +95,16 @@ func (m *MockPersister) GetUsers() (MultipleUsers, error) {
 // GetUsers indicates an expected call of GetUsers
 func (mr *MockPersisterMockRecorder) GetUsers() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockPersister)(nil).GetUsers))
+}
+
+// DeleteUser mocks base method
+func (m *MockPersister) DeleteUser(targetID, userID int) error {
+	ret := m.ctrl.Call(m, "DeleteUser", targetID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUser indicates an expected call of DeleteUser
+func (mr *MockPersisterMockRecorder) DeleteUser(targetID, userID interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockPersister)(nil).DeleteUser), targetID, userID)
 }

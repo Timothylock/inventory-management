@@ -625,7 +625,7 @@ func TestDeleteUserInternalErr(t *testing.T) {
 	defer db.conn.Close()
 
 	mock.ExpectExec(deleteUser).
-		WithArgs(123).
+		WithArgs(1234).
 		WillReturnError(errors.New("sorry"))
 
 	err := db.DeleteUser(1234, 123)
@@ -638,7 +638,7 @@ func TestDeleteUserNoRowsAff(t *testing.T) {
 	defer db.conn.Close()
 
 	mock.ExpectExec(deleteUser).
-		WithArgs(123).
+		WithArgs(1234).
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := db.DeleteUser(1234, 123)
@@ -651,7 +651,7 @@ func TestDeleteUserSuccess(t *testing.T) {
 	defer db.conn.Close()
 
 	mock.ExpectExec(deleteUser).
-		WithArgs(123).
+		WithArgs(1234).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err := db.DeleteUser(1234, 123)
