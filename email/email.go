@@ -9,28 +9,31 @@ import (
 )
 
 type Service struct {
+	cfg    config.Config
 	client *gomail.Dialer
 }
 
 func NewService(c config.Config) Service {
-	if c.EmailSMTPServ == "" {
+	if c.EmailSmtpServ == "" {
 		return Service{
+			cfg:    c,
 			client: nil,
 		}
 	}
 
 	return Service{
-		client: gomail.NewPlainDialer(c.EmailSMTPServ, c.EmailSMTPPort, c.EmailUsername, c.EmailPassword),
+		cfg:    c,
+		client: gomail.NewPlainDialer(c.EmailSmtpServ, c.EmailSmtpPort, c.EmailUsername, c.EmailPassword),
 	}
 }
 
-func (s *Service) sendEmail(toEmail, subject, body string) error {
+func (s *Service) SendEmail(toEmail, subject, body string) error {
 	if s.client == nil {
 		return errors.New("your admin did not set up email properly. Please contact them to reset your password for you")
 	}
 
 	m := gomail.NewMessage()
-	m.SetHeader("From", "alex@example.com")
+	m.SetHeader("From", s.cfg.EmailFromAddr)
 	m.SetHeader("To", toEmail)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body)

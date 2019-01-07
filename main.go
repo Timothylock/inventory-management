@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/Timothylock/inventory-management/config"
+	"github.com/Timothylock/inventory-management/email"
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/persistence"
 	"github.com/Timothylock/inventory-management/service"
@@ -30,7 +31,9 @@ func main() {
 	is := items.NewService(persister)
 	us := upc.NewService(*cfg)
 	user := users.NewService(persister)
-	api := service.NewAPI(is, us, user)
+	es := email.NewService(*cfg)
+
+	api := service.NewAPI(is, us, user, es)
 
 	router := service.NewRouter(&api, *cfg)
 

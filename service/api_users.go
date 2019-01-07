@@ -155,17 +155,20 @@ func (a *API) ForgotPassword() http.Handler {
 		}
 
 		if targetU.ID == 0 {
-			responses.SendError(w, responses.Unauthorized(errors.New("cannot reset System user")))
+			responses.SendError(w, responses.InternalError(errors.New("cannot reset System user")))
 			return
 		}
 
 		if targetU.Email != email {
-			responses.SendError(w, responses.Unauthorized(errors.New("no username with that email on record")))
+			responses.SendError(w, responses.InternalError(errors.New("no username with that email on record")))
 			return
 		}
 
 		newPass := randomString(12)
-		fmt.Println(newPass) // This should send email instead
+		if err := a.emailService.SendEmail(targetU.Email, "Inventory Password Reset", "<p>Your new password is <b>"+newPass+"</b>. Please change it once you log in. </p>"); err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
 
 		if err = a.userService.EditUser(targetU.Username, targetU.Email, newPass, targetU.IsSysAdmin); err != nil {
 			responses.SendError(w, responses.InternalError(err))

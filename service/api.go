@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/Timothylock/inventory-management/config"
+	"github.com/Timothylock/inventory-management/email"
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/middleware"
 	"github.com/Timothylock/inventory-management/responses"
@@ -22,13 +23,15 @@ type API struct {
 	itemsService items.Service
 	upcService   upc.Service
 	userService  users.Service
+	emailService email.Service
 }
 
-func NewAPI(is items.Service, us upc.Service, user users.Service) API {
+func NewAPI(is items.Service, us upc.Service, user users.Service, es email.Service) API {
 	return API{
 		itemsService: is,
 		upcService:   us,
 		userService:  user,
+		emailService: es,
 	}
 }
 

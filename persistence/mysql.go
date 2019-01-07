@@ -222,8 +222,6 @@ func (m *MySQL) GetUserByUsername(username string, curUserID int) (users.User, e
 	user.Token = userdb.Token
 	user.Username = userdb.Username
 
-	m.addLog(curUserID, strconv.Itoa(user.ID), "getUserByUsername", "OBJECTID is userID in this case. Queried user by username")
-
 	return user, err
 }
 

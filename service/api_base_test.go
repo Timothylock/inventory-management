@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Timothylock/inventory-management/config"
+	"github.com/Timothylock/inventory-management/email"
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/upc"
 	"github.com/Timothylock/inventory-management/users"
@@ -27,8 +28,9 @@ func setupServerAuthenticated(ip items.Persister, t *testing.T) *httptest.Server
 	is := items.NewService(ip)
 	us := upc.NewService(cfg)
 	user := users.NewService(up)
+	es := email.NewService(cfg)
 
-	serv := NewAPI(is, us, user)
+	serv := NewAPI(is, us, user, es)
 
 	return httptest.NewServer(NewRouter(&serv, cfg))
 }
@@ -39,8 +41,9 @@ func setupServer(ip items.Persister, up users.Persister, t *testing.T) *httptest
 	is := items.NewService(ip)
 	us := upc.NewService(cfg)
 	user := users.NewService(up)
+	es := email.NewService(cfg)
 
-	serv := NewAPI(is, us, user)
+	serv := NewAPI(is, us, user, es)
 
 	return httptest.NewServer(NewRouter(&serv, cfg))
 }
@@ -54,8 +57,9 @@ func setupServerWithConfigAuthenticated(ip items.Persister, cfg config.Config, t
 	is := items.NewService(ip)
 	us := upc.NewService(cfg)
 	user := users.NewService(up)
+	es := email.NewService(cfg)
 
-	serv := NewAPI(is, us, user)
+	serv := NewAPI(is, us, user, es)
 
 	return httptest.NewServer(NewRouter(&serv, cfg))
 }
