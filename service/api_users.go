@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -131,4 +132,54 @@ func (a *API) DeleteUser(u users.User) http.Handler {
 
 		sendJSONorErr("Success", w)
 	})
+}
+
+func (a *API) ForgotPassword() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		uname, err := getRequiredParam(r, "username")
+		if err != nil {
+			responses.SendError(w, responses.MissingParamError("username"))
+			return
+		}
+
+		email, err := getRequiredParam(r, "email")
+		if err != nil {
+			responses.SendError(w, responses.MissingParamError("email"))
+			return
+		}
+
+		targetU, err := a.userService.CheckUserByUsername(uname, 0)
+		if err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		if targetU.ID == 0 {
+			responses.SendError(w, responses.Unauthorized(errors.New("cannot reset System user")))
+			return
+		}
+
+		if targetU.Email != email {
+			responses.SendError(w, responses.Unauthorized(errors.New("no username with that email on record")))
+			return
+		}
+
+		newPass := randomString(12)
+		fmt.Println(newPass) // This should send email instead
+
+		if err = a.userService.EditUser(targetU.Username, targetU.Email, newPass, targetU.IsSysAdmin); err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		sendJSONorErr("Success", w)
+	})
+}
+
+func randomString(len int) string {
+	bytes := make([]byte, len)
+	for i := 0; i < len; i++ {
+		bytes[i] = byte(65 + rand.Intn(25))
+	}
+	return string(bytes)
 }

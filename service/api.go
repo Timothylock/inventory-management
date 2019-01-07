@@ -50,6 +50,7 @@ func NewRouter(api *API, cfg config.Config) http.Handler {
 	router.Handler("GET", "/api/user/logincheck", middleware.UserRequired(api.userService, api.LoginCheck))
 	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.userService, api.AddUser))
 	router.Handler("DELETE", "/api/user/delete", middleware.UserRequired(api.userService, api.DeleteUser))
+	router.Handler("GET", "/api/user/resetPassword", api.ForgotPassword())
 
 	// Frontend
 	mux := http.NewServeMux()
