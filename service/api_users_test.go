@@ -262,7 +262,7 @@ func TestAddUser(t *testing.T) {
 			testName: "success",
 			setMock: func(up *users.MockPersister) {
 				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true}, nil).AnyTimes()
-				up.EXPECT().AddUser("someuser", "someEmail", "somepassword", true).Return(nil)
+				up.EXPECT().AddUser("someuser", "someEmail", "somepassword", true, false).Return(nil)
 			},
 			sendBody:   sb,
 			expectCode: 200,
@@ -287,7 +287,7 @@ func TestAddUser(t *testing.T) {
 			testName: "internal error",
 			setMock: func(up *users.MockPersister) {
 				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true}, nil).AnyTimes()
-				up.EXPECT().AddUser("someuser", "someEmail", "somepassword", true).Return(errors.New("sorry"))
+				up.EXPECT().AddUser("someuser", "someEmail", "somepassword", true, false).Return(errors.New("sorry"))
 			},
 			sendBody:   sb,
 			expectCode: 500,

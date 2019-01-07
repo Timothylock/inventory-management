@@ -8,7 +8,7 @@ type Persister interface {
 	GetUser(username, password string) (User, error)
 	GetUserByToken(token string) (User, error)
 	GetUserByUsername(username string, curUserID int) (User, error)
-	AddUser(username, email, password string, isSysAdmin bool) error
+	AddUser(username, email, password string, isSysAdmin, overwrite bool) error
 	GetUsers() (MultipleUsers, error)
 	DeleteUser(targetID, userID int) error
 }
@@ -42,7 +42,7 @@ func (s *Service) CheckUserByToken(token string) (User, error) {
 }
 
 func (s *Service) AddUser(username, email, password string, isSysAdmin bool) error {
-	return s.persister.AddUser(username, email, password, isSysAdmin)
+	return s.persister.AddUser(username, email, password, isSysAdmin, false)
 }
 
 func (s *Service) GetUsers() (MultipleUsers, error) {

@@ -73,15 +73,15 @@ func (mr *MockPersisterMockRecorder) GetUserByUsername(username, curUserID inter
 }
 
 // AddUser mocks base method
-func (m *MockPersister) AddUser(username, email, password string, isSysAdmin bool) error {
-	ret := m.ctrl.Call(m, "AddUser", username, email, password, isSysAdmin)
+func (m *MockPersister) AddUser(username, email, password string, isSysAdmin, overwrite bool) error {
+	ret := m.ctrl.Call(m, "AddUser", username, email, password, isSysAdmin, overwrite)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddUser indicates an expected call of AddUser
-func (mr *MockPersisterMockRecorder) AddUser(username, email, password, isSysAdmin interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockPersister)(nil).AddUser), username, email, password, isSysAdmin)
+func (mr *MockPersisterMockRecorder) AddUser(username, email, password, isSysAdmin, overwrite interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockPersister)(nil).AddUser), username, email, password, isSysAdmin, overwrite)
 }
 
 // GetUsers mocks base method

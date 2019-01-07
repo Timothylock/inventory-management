@@ -615,7 +615,7 @@ func TestAddUserSuccess(t *testing.T) {
 		WithArgs("user", "email", "W6ph5Mm5Pz8GgiULbPgzG37mj9g=", sqlmock.AnyArg(), true).
 		WillReturnResult(sqlmock.NewResult(123, 1))
 
-	err := db.AddUser("user", "email", "password", true)
+	err := db.AddUser("user", "email", "password", true, false)
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
