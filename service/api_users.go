@@ -108,7 +108,23 @@ func (a *API) DeleteUser(u users.User) http.Handler {
 			return
 		}
 
-		if err = a.userService.DeleteUser(uname, u.ID); err != nil {
+		targetU, err := a.userService.CheckUserByUsername(uname, u.ID)
+		if err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		if !targetU.Valid {
+			responses.SendError(w, responses.InternalError(errors.New("username not found or already deleted")))
+			return
+		}
+
+		if targetU.ID == 0 {
+			responses.SendError(w, responses.InternalError(errors.New("cannot delete System user")))
+			return
+		}
+
+		if err = a.userService.DeleteUser(targetU.ID, u.ID); err != nil {
 			responses.SendError(w, responses.InternalError(err))
 			return
 		}

@@ -361,6 +361,15 @@ func TestDeleteUser(t *testing.T) {
 			expectCode: 400,
 		},
 		{
+			testName: "user does not exist",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true, ID: 12345}, nil).AnyTimes()
+				up.EXPECT().GetUserByUsername("someuser", 12345).Return(users.User{}, nil)
+			},
+			uHeader:    "u=someuser",
+			expectCode: 500,
+		},
+		{
 			testName: "cannot get user from username",
 			setMock: func(up *users.MockPersister) {
 				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true, ID: 12345}, nil).AnyTimes()
