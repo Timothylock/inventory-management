@@ -13,6 +13,7 @@ import (
 	"github.com/Timothylock/inventory-management/service"
 	"github.com/Timothylock/inventory-management/upc"
 	"github.com/Timothylock/inventory-management/users"
+	"gopkg.in/gomail.v2"
 )
 
 func main() {
@@ -28,10 +29,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	emailDialer := gomail.NewPlainDialer(cfg.EmailSmtpServ, cfg.EmailSmtpPort, cfg.EmailUsername, cfg.EmailPassword)
+
 	is := items.NewService(persister)
 	us := upc.NewService(*cfg)
 	user := users.NewService(persister)
-	es := email.NewService(*cfg)
+	es := email.NewService(*cfg, emailDialer)
 
 	api := service.NewAPI(is, us, user, es)
 

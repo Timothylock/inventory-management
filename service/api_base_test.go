@@ -28,7 +28,7 @@ func setupServerAuthenticated(ip items.Persister, t *testing.T) *httptest.Server
 	is := items.NewService(ip)
 	us := upc.NewService(cfg)
 	user := users.NewService(up)
-	es := email.NewService(cfg)
+	es := email.NewService(cfg, nil)
 
 	serv := NewAPI(is, us, user, es)
 
@@ -41,7 +41,20 @@ func setupServer(ip items.Persister, up users.Persister, t *testing.T) *httptest
 	is := items.NewService(ip)
 	us := upc.NewService(cfg)
 	user := users.NewService(up)
-	es := email.NewService(cfg)
+	es := email.NewService(cfg, nil)
+
+	serv := NewAPI(is, us, user, es)
+
+	return httptest.NewServer(NewRouter(&serv, cfg))
+}
+
+func setupServerCustomEmail(ip items.Persister, up users.Persister, em email.Sender, t *testing.T) *httptest.Server {
+	cfg := config.Config{}
+
+	is := items.NewService(ip)
+	us := upc.NewService(cfg)
+	user := users.NewService(up)
+	es := email.NewService(cfg, em)
 
 	serv := NewAPI(is, us, user, es)
 
@@ -57,7 +70,7 @@ func setupServerWithConfigAuthenticated(ip items.Persister, cfg config.Config, t
 	is := items.NewService(ip)
 	us := upc.NewService(cfg)
 	user := users.NewService(up)
-	es := email.NewService(cfg)
+	es := email.NewService(cfg, nil)
 
 	serv := NewAPI(is, us, user, es)
 
