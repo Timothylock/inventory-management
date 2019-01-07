@@ -13,6 +13,11 @@ type Config struct {
 	UpcUrl   string `split_words:"true" required:"true"`
 	UpcToken string `split_words:"true" required:"true"`
 
+	EmailSMTPServ string `split_words:"true" required:"false"`
+	EmailSMTPPort int    `split_words:"true" required:"false"`
+	EmailUsername string `split_words:"true" required:"false"`
+	EmailPassword string `split_words:"true" required:"false"`
+
 	FrontendPath string `split_words:"true" required:"true"`
 }
 
