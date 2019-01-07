@@ -21,6 +21,7 @@ const (
 	GetUser          = `SELECT ID\, ISSYSADMIN\, EMAIL\, TOKEN\, USERNAME FROM users.+`
 	addItem          = `INSERT INTO items`
 	addUser          = `INSERT INTO users.+`
+	addUserOverwrite = `UPDATE users.+`
 	addItemOverwrite = `UPDATE items.+`
 	searchItems      = `SELECT search.ID AS ID, NAME, CATEGORY, PICTURE_URL, DETAILS, LOCATION, USERNAME, QUANTITY, STATUS FROM.+`
 	deleteUser       = `UPDATE users SET ACTIVE=0.+`
@@ -607,15 +608,85 @@ func TestGetUsersErr(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+func TestAddUserAlreadyExists(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN"})
+	rows.AddRow(123, 1, "foo@bar.com", "someToken")
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("user").
+		WillReturnRows(rows)
+
+	err := db.AddUser("user", "email", "password", true, false)
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
 func TestAddUserSuccess(t *testing.T) {
 	db, mock := newTestDB(t)
 	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN"})
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("user").
+		WillReturnRows(rows)
 
 	mock.ExpectExec(addUser).
 		WithArgs("user", "email", "W6ph5Mm5Pz8GgiULbPgzG37mj9g=", sqlmock.AnyArg(), true).
 		WillReturnResult(sqlmock.NewResult(123, 1))
 
 	err := db.AddUser("user", "email", "password", true, false)
+	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAddUserOverwriteNotExists(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN"})
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("user").
+		WillReturnRows(rows)
+
+	err := db.AddUser("user", "email", "password", true, true)
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAddUserGetUsernameFail(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("user").
+		WillReturnError(errors.New("uh oh"))
+
+	err := db.AddUser("user", "email", "password", true, true)
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAddUserOverwriteSuccess(t *testing.T) {
+	db, mock := newTestDB(t)
+	defer db.conn.Close()
+
+	rows := sqlmock.NewRows([]string{"ID", "ISSYSADMIN", "EMAIL", "TOKEN"})
+	rows.AddRow(123, 1, "foo@bar.com", "someToken")
+
+	mock.ExpectQuery(GetUser).
+		WithArgs("user").
+		WillReturnRows(rows)
+
+	mock.ExpectExec(addUserOverwrite).
+		WithArgs("user", "email", "W6ph5Mm5Pz8GgiULbPgzG37mj9g=", sqlmock.AnyArg(), true, "user").
+		WillReturnResult(sqlmock.NewResult(123, 1))
+
+	err := db.AddUser("user", "email", "password", true, true)
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

@@ -260,16 +260,28 @@ func (m *MySQL) AddUser(username, email, password string, isSysAdmin, overwrite 
 	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 	token := generateToken()
 
-	var err error
+	u, err := m.GetUserByUsername(username, 0)
+	if err != nil {
+		return err
+	} else if overwrite && !u.Valid {
+		return errors.New("user does not exist")
+	} else if !overwrite && u.Valid {
+		return errors.New("user already exists")
+	}
+
 	if !overwrite {
 		_, err = m.conn.Exec(
 			`INSERT INTO users (USERNAME, EMAIL, PASSWORD, TOKEN, ISSYSADMIN) VALUES (?, ?, ?, ?, ?)`,
 			username, email, sha, token, isSysAdmin,
 		)
+
+		m.addLog(0, "0", "user created", username)
 	} else {
 		_, err = m.conn.Exec(
 			`UPDATE users SET USERNAME = ?, EMAIL = ?, PASSWORD = ?, TOKEN = ?, ISSYSADMIN = ? WHERE USERNAME = ?`,
 			username, email, sha, token, isSysAdmin, username)
+
+		m.addLog(0, "0", "user updated", username)
 	}
 
 	return err
