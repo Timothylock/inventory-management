@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/Timothylock/inventory-management/responses"
@@ -65,7 +64,7 @@ func (a *API) AddUser(u users.User) http.Handler {
 			return
 		}
 
-		if err = a.userService.AddUser(ad.Username, strings.ToLower(ad.Email), ad.Password, ad.IsSysAdmin == "true"); err != nil {
+		if err = a.userService.AddUser(ad.Username, ad.Email, ad.Password, ad.IsSysAdmin == "true"); err != nil {
 			responses.SendError(w, responses.InternalError(err))
 			return
 		}
@@ -160,7 +159,7 @@ func (a *API) ForgotPassword() http.Handler {
 			return
 		}
 
-		if strings.ToLower(targetU.Email) != strings.ToLower(email) {
+		if targetU.Email != email {
 			responses.SendError(w, responses.InternalError(errors.New("no username with that email on record")))
 			return
 		}
