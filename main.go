@@ -7,11 +7,13 @@ import (
 	"os"
 
 	"github.com/Timothylock/inventory-management/config"
+	"github.com/Timothylock/inventory-management/email"
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/persistence"
 	"github.com/Timothylock/inventory-management/service"
 	"github.com/Timothylock/inventory-management/upc"
 	"github.com/Timothylock/inventory-management/users"
+	"gopkg.in/gomail.v2"
 )
 
 func main() {
@@ -27,10 +29,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	emailDialer := gomail.NewPlainDialer(cfg.EmailSmtpServ, cfg.EmailSmtpPort, cfg.EmailUsername, cfg.EmailPassword)
+
 	is := items.NewService(persister)
 	us := upc.NewService(*cfg)
 	user := users.NewService(persister)
-	api := service.NewAPI(is, us, user)
+	es := email.NewService(*cfg, emailDialer)
+
+	api := service.NewAPI(is, us, user, es)
 
 	router := service.NewRouter(&api, *cfg)
 

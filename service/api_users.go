@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -108,11 +109,80 @@ func (a *API) DeleteUser(u users.User) http.Handler {
 			return
 		}
 
-		if err = a.userService.DeleteUser(uname, u.ID); err != nil {
+		targetU, err := a.userService.CheckUserByUsername(uname, u.ID)
+		if err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		if !targetU.Valid {
+			responses.SendError(w, responses.InternalError(errors.New("username not found or already deleted")))
+			return
+		}
+
+		if targetU.ID == 0 {
+			responses.SendError(w, responses.InternalError(errors.New("cannot delete System user")))
+			return
+		}
+
+		if err = a.userService.DeleteUser(targetU.ID, u.ID); err != nil {
 			responses.SendError(w, responses.InternalError(err))
 			return
 		}
 
 		sendJSONorErr("Success", w)
 	})
+}
+
+func (a *API) ForgotPassword() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		uname, err := getRequiredParam(r, "username")
+		if err != nil {
+			responses.SendError(w, responses.MissingParamError("username"))
+			return
+		}
+
+		email, err := getRequiredParam(r, "email")
+		if err != nil {
+			responses.SendError(w, responses.MissingParamError("email"))
+			return
+		}
+
+		targetU, err := a.userService.CheckUserByUsername(uname, 0)
+		if err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		if targetU.ID == 0 {
+			responses.SendError(w, responses.InternalError(errors.New("cannot reset System user")))
+			return
+		}
+
+		if targetU.Email != email {
+			responses.SendError(w, responses.InternalError(errors.New("no username with that email on record")))
+			return
+		}
+
+		newPass := randomString(12)
+		if err := a.emailService.SendEmail(targetU.Email, "Inventory Password Reset", "<p>Your new password is <b>"+newPass+"</b>. Please change it once you log in. </p>"); err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		if err = a.userService.EditUser(targetU.Username, targetU.Email, newPass, targetU.IsSysAdmin); err != nil {
+			responses.SendError(w, responses.InternalError(err))
+			return
+		}
+
+		sendJSONorErr("Success", w)
+	})
+}
+
+func randomString(len int) string {
+	bytes := make([]byte, len)
+	for i := 0; i < len; i++ {
+		bytes[i] = byte(65 + rand.Intn(25))
+	}
+	return string(bytes)
 }

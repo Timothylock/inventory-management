@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/Timothylock/inventory-management/config"
+	"github.com/Timothylock/inventory-management/email"
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/middleware"
 	"github.com/Timothylock/inventory-management/responses"
@@ -22,13 +23,15 @@ type API struct {
 	itemsService items.Service
 	upcService   upc.Service
 	userService  users.Service
+	emailService email.Service
 }
 
-func NewAPI(is items.Service, us upc.Service, user users.Service) API {
+func NewAPI(is items.Service, us upc.Service, user users.Service, es email.Service) API {
 	return API{
 		itemsService: is,
 		upcService:   us,
 		userService:  user,
+		emailService: es,
 	}
 }
 
@@ -50,6 +53,7 @@ func NewRouter(api *API, cfg config.Config) http.Handler {
 	router.Handler("GET", "/api/user/logincheck", middleware.UserRequired(api.userService, api.LoginCheck))
 	router.Handler("POST", "/api/user/add", middleware.UserRequired(api.userService, api.AddUser))
 	router.Handler("DELETE", "/api/user/delete", middleware.UserRequired(api.userService, api.DeleteUser))
+	router.Handler("GET", "/api/user/resetPassword", api.ForgotPassword())
 
 	// Frontend
 	mux := http.NewServeMux()

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/Timothylock/inventory-management/email"
 	"github.com/Timothylock/inventory-management/items"
 	"github.com/Timothylock/inventory-management/users"
 	"github.com/golang/mock/gomock"
@@ -262,7 +263,7 @@ func TestAddUser(t *testing.T) {
 			testName: "success",
 			setMock: func(up *users.MockPersister) {
 				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true}, nil).AnyTimes()
-				up.EXPECT().AddUser("someuser", "someEmail", "somepassword", true).Return(nil)
+				up.EXPECT().AddUser("someuser", "someEmail", "somepassword", true, false).Return(nil)
 			},
 			sendBody:   sb,
 			expectCode: 200,
@@ -287,7 +288,7 @@ func TestAddUser(t *testing.T) {
 			testName: "internal error",
 			setMock: func(up *users.MockPersister) {
 				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true}, nil).AnyTimes()
-				up.EXPECT().AddUser("someuser", "someEmail", "somepassword", true).Return(errors.New("sorry"))
+				up.EXPECT().AddUser("someuser", "someEmail", "somepassword", true, false).Return(errors.New("sorry"))
 			},
 			sendBody:   sb,
 			expectCode: 500,
@@ -361,6 +362,15 @@ func TestDeleteUser(t *testing.T) {
 			expectCode: 400,
 		},
 		{
+			testName: "user does not exist",
+			setMock: func(up *users.MockPersister) {
+				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true, ID: 12345}, nil).AnyTimes()
+				up.EXPECT().GetUserByUsername("someuser", 12345).Return(users.User{}, nil)
+			},
+			uHeader:    "u=someuser",
+			expectCode: 500,
+		},
+		{
 			testName: "cannot get user from username",
 			setMock: func(up *users.MockPersister) {
 				up.EXPECT().GetUserByToken(gomock.Any()).Return(users.User{Valid: true, IsSysAdmin: true, ID: 12345}, nil).AnyTimes()
@@ -402,6 +412,103 @@ func TestDeleteUser(t *testing.T) {
 			defer server.Close()
 
 			resp, err := sendDelete(server.URL + "/api/user/delete?" + tc.uHeader)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectCode, resp.StatusCode)
+		})
+	}
+}
+
+func TestForgotPassword(t *testing.T) {
+	type testCase struct {
+		testName   string
+		setMock    func(up *users.MockPersister, es *email.MockSender)
+		uHeader    string
+		expectCode int
+	}
+
+	testCases := []testCase{
+		{
+			testName: "success",
+			setMock: func(up *users.MockPersister, es *email.MockSender) {
+				up.EXPECT().GetUserByUsername("someuser", 0).Return(users.User{ID: 123, Username: "foo", Valid: true, IsSysAdmin: true, Email: "foo@foo.ca"}, nil)
+				es.EXPECT().DialAndSend(gomock.Any()).Return(nil)
+				up.EXPECT().AddUser("foo", "foo@foo.ca", gomock.Any(), true, true).Return(nil)
+			},
+			uHeader:    "username=someuser&email=foo@foo.ca",
+			expectCode: 200,
+		},
+		{
+			testName: "incorrect email",
+			setMock: func(up *users.MockPersister, es *email.MockSender) {
+				up.EXPECT().GetUserByUsername("someuser", 0).Return(users.User{ID: 123, Username: "foo", Valid: true, IsSysAdmin: true, Email: "foo@foo.ca"}, nil)
+			},
+			uHeader:    "username=someuser&email=foobar@foo.ca",
+			expectCode: 500,
+		},
+		{
+			testName: "user not found",
+			setMock: func(up *users.MockPersister, es *email.MockSender) {
+				up.EXPECT().GetUserByUsername("someuser", 0).Return(users.User{Valid: false}, nil)
+			},
+			uHeader:    "username=someuser&email=foobar@foo.ca",
+			expectCode: 500,
+		},
+		{
+			testName: "email failed",
+			setMock: func(up *users.MockPersister, es *email.MockSender) {
+				up.EXPECT().GetUserByUsername("someuser", 0).Return(users.User{ID: 123, Username: "foo", Valid: true, IsSysAdmin: true, Email: "foo@foo.ca"}, nil)
+				es.EXPECT().DialAndSend(gomock.Any()).Return(errors.New("Someerror"))
+			},
+			uHeader:    "username=someuser&email=foo@foo.ca",
+			expectCode: 500,
+		},
+		{
+			testName: "changing pass failed",
+			setMock: func(up *users.MockPersister, es *email.MockSender) {
+				up.EXPECT().GetUserByUsername("someuser", 0).Return(users.User{ID: 123, Username: "foo", Valid: true, IsSysAdmin: true, Email: "foo@foo.ca"}, nil)
+				es.EXPECT().DialAndSend(gomock.Any()).Return(nil)
+				up.EXPECT().AddUser("foo", "foo@foo.ca", gomock.Any(), true, true).Return(errors.New("oops"))
+			},
+			uHeader:    "username=someuser&email=foo@foo.ca",
+			expectCode: 500,
+		},
+		{
+			testName: "missing param - email",
+			setMock: func(up *users.MockPersister, es *email.MockSender) {
+			},
+			uHeader:    "username=someuser",
+			expectCode: 400,
+		},
+		{
+			testName: "missing param - username",
+			setMock: func(up *users.MockPersister, es *email.MockSender) {
+			},
+			uHeader:    "",
+			expectCode: 400,
+		},
+		{
+			testName: "lookup failed",
+			setMock: func(up *users.MockPersister, es *email.MockSender) {
+				up.EXPECT().GetUserByUsername("someuser", 0).Return(users.User{}, errors.New("someerror"))
+			},
+			uHeader:    "username=someuser&email=foo@foo.ca",
+			expectCode: 500,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			up := users.NewMockPersister(mc)
+			em := email.NewMockSender(mc)
+			tc.setMock(up, em)
+
+			server := setupServerCustomEmail(nil, up, em, t)
+			defer server.Close()
+
+			resp, err := sendGet(server.URL + "/api/user/resetPassword?" + tc.uHeader)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectCode, resp.StatusCode)
 		})
